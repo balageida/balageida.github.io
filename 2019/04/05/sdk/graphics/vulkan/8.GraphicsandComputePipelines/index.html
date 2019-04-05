@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Graphics and Compute Pipelines[TOC] 说明内容  Creating a shader module Specifying pipeline shader stages Specifying a pipeline vertex binding description, attribute description, and inputstate Specifying">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Graphics and Compute Pipelines">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Graphics and Compute Pipelines[TOC] 说明内容  Creating a shader module Specifying pipeline shader stages Specifying a pipeline vertex binding description, attribute description, and inputstate Specifying">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/media/vertexdescription.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/media/primitivetype.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/media/pipelinelayout.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/media/graphicspipeline1.png">
+<meta property="og:updated_time" content="2019-04-05T13:20:13.450Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Graphics and Compute Pipelines">
+<meta name="twitter:description" content="Graphics and Compute Pipelines[TOC] 说明内容  Creating a shader module Specifying pipeline shader stages Specifying a pipeline vertex binding description, attribute description, and inputstate Specifying">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/media/vertexdescription.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Graphics and Compute Pipelines | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Graphics and Compute Pipelines
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:20:13" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Graphics-and-Compute-Pipelines"><a href="#Graphics-and-Compute-Pipelines" class="headerlink" title="Graphics and Compute Pipelines"></a>Graphics and Compute Pipelines</h1><p>[TOC]</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h3><blockquote>
+<ul>
+<li>Creating a shader module</li>
+<li>Specifying pipeline shader stages</li>
+<li>Specifying a pipeline vertex binding description, attribute description, and input<br>state</li>
+<li>Specifying a pipeline input assembly state</li>
+<li>Specifying a pipeline tessellation state</li>
+<li>Specifying a pipeline viewport and scissor test state</li>
+<li>Specifying a pipeline rasterization state</li>
+<li>Specifying a pipeline multisample state</li>
+<li>Specifying a pipeline depth and stencil state</li>
+<li>Specifying a pipeline blend state</li>
+<li>Specifying pipeline dynamic states</li>
+<li>Creating a pipeline layout</li>
+<li>Specifying graphics pipeline creation parameters</li>
+<li>Creating a pipeline cache object</li>
+<li>Retrieving data from a pipeline cache</li>
+<li>Merging multiple pipeline cache objects</li>
+<li>Creating a graphics pipeline</li>
+<li>Creating a compute pipeline</li>
+<li>Binding a pipeline object</li>
+<li>Creating a pipeline layout with a combined image sampler, a buffer, and push<br>constant ranges</li>
+<li>Creating a graphics pipeline with vertex and fragment shaders, depth test<br>enabled, and with dynamic viewport and scissor tests</li>
+<li>Creating multiple graphics pipelines on multiple threads</li>
+<li>Destroying a pipeline</li>
+<li>Destroying a pipeline cache</li>
+<li>Destroying a pipeline layout</li>
+<li>Destroying a shader module</li>
+</ul>
+</blockquote>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>本文内容是核心之一.</p>
+<p>在cb里record和提交给queus的operations由硬件执行.使用compute pipeline进行数学计算,使用graphic pipeline来绘制图形.</p>
+<p>Pipeline objects控制geometry绘制和计算的方式.管理硬件的行为.是Vulkan和OpenGL最大的区别之处.它允许我们随时修改rendering或computing参数.我们能设置state,激活shaderprogram,绘制几何体,然后激活另一个shader program绘制另一个几何体.在vulkan里这是不可能的,因为整个rendering或computeingstate存储在一个单片的(monolithical)object里.当使用不同的shaders时,需要准备和使用分开的pipeline.不能switch shaders.</p>
+<p>这一开始可能让人害怕,因为很多shader变体(variations)(还不包括额外的pipeline state)可能会创建大量的pipeline objects.但它是为了两个目的服务的,第一是性能.驱动能提前知道整个state以便优化后续操作的执行.第二是稳定性,随时修改state可能让驱动执行额外的操作,比如shader重编译.vulkan中所有需要提前准备的包括shader 编译都在pipeline创建时完成.</p>
+<p>本文讨论如何给graphics或compute pipelines 参数进行设置.准备shader modules和决定激活shader stages激活,如何设置depth/stencil tests和如何激活blending.指明vertex attributes以及在绘制操作时时如何提供的.最后看如何创建多pipelines以及如何提高创建速度.</p>
+<h2 id="Shader-Module"><a href="#Shader-Module" class="headerlink" title="Shader Module"></a>Shader Module</h2><h3 id="Creating-a-shader-module"><a href="#Creating-a-shader-module" class="headerlink" title="Creating a shader module"></a>Creating a shader module</h3><p>第一件事是为pipeline object准备shader modules.SPIR-V assembly.一个module可能包含多个shader stages.</p>
+<p>Shader modules包括选择的shader programs的源码–一个SPIR-V assembly.可能包含多个stages,但每个stage需要有关联的入口(entry point).这些入口作为创建pipeline object的参数之一.</p>
+<p>加载SPIR-V code,然后</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkShaderModuleCreateInfo shader_module_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    source_code.size(),</span><br><span class="line">    <span class="keyword">reinterpret_cast</span>&lt;<span class="keyword">uint32_t</span> <span class="keyword">const</span> *&gt;(source_code.data())</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>调用vkCreateShaderModule</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateShaderModule( logical_device,</span><br><span class="line">&amp;shader_module_create_info, <span class="literal">nullptr</span>, &amp;shader_module );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a shader module."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>需要记住创建shader module时shader没有编译和链接,而是在创建pipeline object时完成.</p>
+<h2 id="pipeline-states"><a href="#pipeline-states" class="headerlink" title="pipeline states"></a>pipeline states</h2><h3 id="Specifying-pipeline-shader-stages"><a href="#Specifying-pipeline-shader-stages" class="headerlink" title="Specifying pipeline shader stages"></a>Specifying pipeline shader stages</h3><p>在compute pipelines,我们只能用compute shaders.但graphics pipeline包括很多shader stages–vertex,geometry,tessellation control and evaluation,fragment.所以为了正确创建pipeline,需要指明哪些可编程shader stages在创建在cb里的pipeline时会被激活.且需要提供激活的shaders的所有源码.</p>
+<p>自定义一个结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">structShaderStageParameters &#123;</span><br><span class="line">    VkShaderStageFlagBits ShaderStage;</span><br><span class="line">    VkShaderModule ShaderModule;</span><br><span class="line">    <span class="keyword">char</span> <span class="keyword">const</span> * EntryPointName;</span><br><span class="line">    VkSpecializationInfo <span class="keyword">const</span> * SpecializationInfo;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>VkSpecializationInfo 用来提供constant变量设置值.可为nullptr.</p>
+<p>为了定义一组pipeline要激活的shader stages,需要准备VkPipelineShaderStageCreateInfo的数组.每个shader stage需要一个独立的entry,在entry里指明shader模块以及实现shader行为的入口.</p>
+<p>也能提供特殊信息,比如创建时(运行时)修改常量的值,这允许在多次使用相同的shader时有细微变化.</p>
+<p>graphics和compute pipelins都需要指明pipeline shader stages信息</p>
+<p>假设只使用verte和fragment shaders.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;ShaderStageParameters&gt;shader_stage_params = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        VK_SHADER_STAGE_VERTEX_BIT,</span><br><span class="line">        *vertex_shader_module,</span><br><span class="line">        <span class="string">"main"</span>,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        VK_SHADER_STAGE_FRAGMENT_BIT,</span><br><span class="line">        *fragment_shader_module,</span><br><span class="line">        <span class="string">"main"</span>,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">shader_stage_create_infos.clear();</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; shader_stage : shader_stage_params ) &#123;</span><br><span class="line">    shader_stage_create_infos.push_back( &#123;</span><br><span class="line">        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,</span><br><span class="line">        <span class="literal">nullptr</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        shader_stage.ShaderStage,</span><br><span class="line">        shader_stage.ShaderModule,</span><br><span class="line">        shader_stage.EntryPointName,</span><br><span class="line">        shader_stage.SpecializationInfo</span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>每个shader stage需要时独一无二的.</p>
+<h3 id="Specifying-a-pipelinee-vertex-bindign-description-attribute-description-and-input-state"><a href="#Specifying-a-pipelinee-vertex-bindign-description-attribute-description-and-input-state" class="headerlink" title="Specifying a pipelinee vertex bindign description,attribute description,and input state"></a>Specifying a pipelinee vertex bindign description,attribute description,and input state</h3><p>当想绘制几何体,我们准备额外的属性比如normal vectors,colors,texture coordinates.这些顶点数据是我们可以随意选择的,为了硬件能正确使用它们,我们需要指明有多少属性,内存中如何而排放,或者它们从哪里取.这些通过创建graphics pipeline时verte bindign description和attribute description提供.</p>
+<p>veertex binding定义从绑定到选定索引的顶点缓冲区获取的数据集合.此绑定用作顶点属性的编号数据源.我们能至少使用16个分开的bindings,能绑定分开的vertex buffers或同一个buffer的不同memory.</p>
+<p>通过binding description,指明数据来自哪里(from which binding),如何存放(缓冲区中连续元素之间的跨距是多少),数据如何读取($\color{red}{逐vertex还是逐instance}$).</p>
+<p>一下是一个例子:vec3 position,ve2 texcoord,vec3 color</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkVertexInputBindingDescription&gt; binding_descriptions = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">8</span> * <span class="keyword">sizeof</span>( <span class="keyword">float</span> ),</span><br><span class="line">        VK_VERTEX_INPUT_RATE_VERTEX</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>通过vertex input description,我们定义了从给定绑定中获取的属性.每个属性需要提供一个shader location(与layout(location=<number>)一样),用于给定属性的数据格式,以及给定属性开始时的内存偏移量(offset).input description 条目数量指明了渲染时属性数量总和.</number></p>
+<p><img src="media/vertexdescription.png" alt></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkVertexInputAttributeDescription&gt; attribute_descriptions = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_R32G32B32_SFLOAT,</span><br><span class="line">        <span class="number">0</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_R32G32_SFLOAT,</span><br><span class="line">        <span class="number">3</span> * <span class="keyword">sizeof</span>( <span class="keyword">float</span> )</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">2</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_R32G32B32_SFLOAT,</span><br><span class="line">        <span class="number">5</span> * <span class="keyword">sizeof</span>( <span class="keyword">float</span> )</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vertex_input_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(binding_descriptions.size()),</span><br><span class="line">    binding_descriptions.data(),</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(attribute_descriptions.size()),</span><br><span class="line">    attribute_descriptions.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-input-assembly-state"><a href="#Specifying-a-pipeline-input-assembly-state" class="headerlink" title="Specifying a pipeline input assembly state"></a>Specifying a pipeline input assembly state</h3><p>绘制几何体涉及明确的图元类型,通过input assembly state完成.</p>
+<p>VkPipelineInputAssemblyStateCreateInfo</p>
+<p>通过input assembly state定义vertices如何组成polygons,最常用的是triangle strips 或Lists.</p>
+<p><img src="media/primitivetype.png" alt></p>
+<p>注意事项</p>
+<blockquote>
+<ul>
+<li>list primitives不能使用primitive restart选项</li>
+<li>primitives with adjacency只能和geometry shaders一起使用过.创建logical device时需要激活geometryShader特性.</li>
+<li>当使用tessellation shaders时只能用patch primitives.创建logical device时需要激活tessellationShader特性.</li>
+</ul>
+<p>VkPipelineInputAssemblyStateCreateInfo:</p>
+</blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">input_assembly_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    topology,</span><br><span class="line">    primitive_restart_enable</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-tessellation-state"><a href="#Specifying-a-pipeline-tessellation-state" class="headerlink" title="Specifying a pipeline tessellation state"></a>Specifying a pipeline tessellation state</h3><p>为了使用tessellation shaders,需要</p>
+<blockquote>
+<ul>
+<li>创建logicalDevice时激活tessellationShader特性</li>
+<li>为tessellation control和evaluation shaders写代码</li>
+<li>为他们创建一个shader module(或2个)</li>
+<li>准备VkPipelineTessellationStateCreateInfo pipeline tessellation state</li>
+</ul>
+</blockquote>
+<p>VkPipelineTessellationStateCreateInfo</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tessellation_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    patch_control_points_count</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在tessellation state里我们只需要提供形成patch(vertices)的control points信息.至少支持32个vertices.</p>
+<p>一个patch就是一组点(vertices),用于tessellation stages生成points,lines,或三角形之类的polygons.作为例子,获取三角形vertices</p>
+<p>VkPipelineTessellationStateCreateInfo:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tessellation_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    patch_control_points_count</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-viewport-and-scissor-test-state"><a href="#Specifying-a-pipeline-viewport-and-scissor-test-state" class="headerlink" title="Specifying a pipeline viewport and scissor test state"></a>Specifying a pipeline viewport and scissor test state</h3><p>在屏幕上绘制要求指明screen parameters.创建swapchain不够,不总是绘制整个image area.有在一个更小的image上绘制得情况,比如镜面反射,分屏多人游戏.我们定义要通过pipeline viewport和scissor test states绘制到的图像区域</p>
+<p>指明viewport和scissor states参数要求给viewport和scissor test提供独立的参数,但数量一致.自定义一个结构体</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ViewportInfo</span> &#123;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkViewport&gt; Viewports;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkRect2D&gt; Scissors;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果要多viewport渲染，需要在创建logical device时激活multiViewport特性</p>
+<p>顶点从局部坐标变换到clip space,硬件做透视出发,成圣normalized device coordinates(标准化设备坐标NDC),然后polygons被assemled和rasterized(光栅化)–产生了fragments,每个fragments有自己的position(由framgbuffer的coordinates定义).为了position被正确计算,需要视口(viewport)变换.这个变换的参数由viewport state指明.</p>
+<p>viewport 和 scissor test state是可选的,尽管通常启用.但如果不激活rasterization就不需要提供它们.</p>
+<p>viewport state,我们定义framebuffer的coordinate(pixels on screen)的$\color{red}{左上角和width和height}$.也定义iewport depth值得最小、最大值(floating-point $\in$[0,1]).最大深度比最小深度小也是合法的.</p>
+<p>scissor test允许对生成的fragments用指明的矩形做额外的clip操作.如果不想做clip操作,可以指明一个viewport大小的区域.</p>
+<p>Vulkan里scissort test一直开启.</p>
+<p>一个例子</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">ViewportInfo viewport_infos = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">512.0f</span>,</span><br><span class="line">            <span class="number">512.0f</span>,</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">1.0f</span></span><br><span class="line">        &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="number">0</span>,</span><br><span class="line">                <span class="number">0</span></span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="number">512</span>,</span><br><span class="line">                <span class="number">512</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>前面的变量可用于创建此配方中定义的viewport和scissor test.实现如下</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint32_t</span> viewport_count =</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(viewport_infos.Viewports.size());</span><br><span class="line"><span class="keyword">uint32_t</span> scissor_count =</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(viewport_infos.Scissors.size());</span><br><span class="line">viewport_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    viewport_count,</span><br><span class="line">    viewport_infos.Viewports.data(),</span><br><span class="line">    scissor_count,</span><br><span class="line">    viewport_infos.Scissors.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果想改变viewport或scissor test参数,需要重建pipeline.但是在创建pipeline时可以指明viewport和scissor test parameters是动态的(dynamic).这样就不用重建pipeline就能改变这些参数了.可以在command buffer recording过程中指明.但是viewport和scissor tests的数量是pipeline 创建时指定的.之后不能改.</p>
+<p>除非创建logical device时激活了multiViewport特性,否则不能提供一个以上的viewport和scissor test.</p>
+<p>只能在geometry shaders内更改用于rasterization的viewport transformation的index.</p>
+<h3 id="Specifying-a-pipeline-rasterzation-state"><a href="#Specifying-a-pipeline-rasterzation-state" class="headerlink" title="Specifying a pipeline rasterzation state"></a>Specifying a pipeline rasterzation state</h3><p>rasterization process将assembled polygons生成fragments(pixels).viewport state在这使用,fragments会生成到framebuffer coordinates.为了觉得fragments如何生成,我们需要准备rasterization state.</p>
+<p>rasterization state控制rasterization的参数.首先最重要的是它定义是否开启rasterization.能指明polygon哪一侧是front–是顶点在屏幕上按顺时针顺序(clockwise)出现或按逆时针(counterclockwise)顺序出现的.是否进行front,back,both faces culling.OpenGL中默认逆时针表面为正面且culling关闭.vulkan没有默认值.</p>
+<p>一个rasterization state在graphics pipeline创建时总是需要的.</p>
+<p>rasterization state也控制polygons绘制的方式.通常需要fully rendered(filled).但也能指明是否只绘制edges(lines)或者points(vertices).Line或points模式只有在创建logical device时激活了fillModeNoSolid特性时才能用.</p>
+<p>还需要定义fragment的深度值如何计算,能够开启depth bias–一个给生成的depth value进行offset并添加slope factor的过程.也需要指明当depth bias激活时能给depth value加上的最大的(最小的)offset值.</p>
+<p>这之后,也需要定义如果深度超过viewport state给定的范围怎么做.当depth clamp激活,会进行clamp.如果没有,fragment会discarded.(默认应该是disable)</p>
+<p>最后一件事,定义绘制的lines的夸大怒,通常指明为1.但如果激活wideLines特性,能提供大于1的值.</p>
+<p>同理,设置point size.</p>
+<p>其实这些值在shader里可以对定点进行设置</p>
+<p>VkPipelineRasterizationStateCreateInfo.</p>
+<p>一个例子</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineRasterizationStateCreateInfo rasterization_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    depth_clamp_enable,</span><br><span class="line">    rasterizer_discard_enable,</span><br><span class="line">    polygon_mode,</span><br><span class="line">    culling_mode,</span><br><span class="line">    front_face,</span><br><span class="line">    depth_bias_enable,</span><br><span class="line">    depth_bias_constant_factor,</span><br><span class="line">    depth_bias_clamp,</span><br><span class="line">    depth_bias_slope_factor,</span><br><span class="line">    line_width</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-multisample-state"><a href="#Specifying-a-pipeline-multisample-state" class="headerlink" title="Specifying a pipeline multisample state"></a>Specifying a pipeline multisample state</h3><p>多重采用(multisampling)是绘制primitives时抗锯齿(eliminates jagged edges)的proceess.换句话说,它可以anti-alias polygons,lines and points.通过multisample state控制.</p>
+<p>VkPipelineMultisampleStateCreateInfo</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">multisample_state_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    sample_count,<span class="comment">//the number of samples generated per fragment</span></span><br><span class="line">    per_sample_shading_enable,<span class="comment">//</span></span><br><span class="line">    min_sample_shading,<span class="comment">//minimal number of uniquely shaded samples</span></span><br><span class="line">    sample_masks,<span class="comment">//fragment的覆盖范围参数</span></span><br><span class="line">    alpha_to_coverage_enable,<span class="comment">//是否从alpha分量生成coverage</span></span><br><span class="line">    alpha_to_one_enable<span class="comment">//是否alpha用1.0替代</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-depth-and-stencil-state"><a href="#Specifying-a-pipeline-depth-and-stencil-state" class="headerlink" title="Specifying a pipeline depth and stencil state"></a>Specifying a pipeline depth and stencil state</h3><p>depth test (never, less, less and equal, equal,greater and equal, greater, not equal, always)</p>
+<p>stencil test compareOp(never, less, less and equal, equal,greater and equal, greater, not equal, always)</p>
+<p>dpeth 和 stencil state在rasterization为非激活或render pass给定的subpass没有用depth/stencil attachment时不需要.</p>
+<p>需要指明depth value如何比较的以及通过测试的fragment是否写入depth attachment.</p>
+<p>当depthBounds 特性激活时,能使用额外的depth bounds test.这个测试监测fragment是否在特定的minDepthBounds-maxDepthBounds范围内.如果不是discard(failed the depth test).</p>
+<p>stencil test对每个fragment与一个integer 值进行额外的test.能用于多种目的,比如能定义复杂的图形决定哪块区域需要渲染,在defered shading/lighting中决定哪块区域进行lit,还有渲染鼠标选中物体的轮廓(高亮)都很有用,以及渲染隐藏在物体后面的物体的轮廓.</p>
+<p>在激活stencil test的情况下,我们需要给front and back -facing polygons定义参数.这些参数在:fragment stencil test失败;stencil test成功但depth test失败;stencil test和depth test都成功的情况下执行什么行动.对于每种情况定义一些模式:保持不变;重置为0;替换为参考值;clamp(saturate)递增或递减;按位倒转.也指明进行comparison操作时test如何操作(与depth test类似),比较和写入模板,选择应参与测试或应在模板attachment中更新的stencil value’s bits,以及参考值.</p>
+<p>VkPipelineDepthStencilStateCreateInfo</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineDepthStencilStateCreateInfo depth_and_stencil_state_create_info =</span><br><span class="line">&#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    depth_test_enable,</span><br><span class="line">    depth_write_enable,</span><br><span class="line">    depth_compare_op,</span><br><span class="line">    depth_bounds_test_enable,</span><br><span class="line">    stencil_test_enable,</span><br><span class="line">    front_stencil_test_parameters,</span><br><span class="line">    back_stencil_test_parameters,</span><br><span class="line">    min_depth_bounds,</span><br><span class="line">    max_depth_bounds</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-a-pipeline-blend-state"><a href="#Specifying-a-pipeline-blend-state" class="headerlink" title="Specifying a pipeline blend state"></a>Specifying a pipeline blend state</h3><p>为了模拟透明物体,硬件通过混合存储在framebuffer里的已经渲染的fragment的颜色,通过graphics pipeline的blend state准备这个操作.</p>
+<p>VkPipelineColorBlendAttachmentState</p>
+<p>VkPipelineColorBlendStateCreateInfo</p>
+<p>blending state是可选的且在rasterization非激活状态时或graphics pipeline的subpass没有color attachment是不要求的.</p>
+<p>blending state主要是定义blending 操作的参数.但它也有其他用处,指明color mask选择渲染时哪个color components刷新(written to).控制logical operation 状态.当激活时,在当前fragment color和已经写入framebuffer的color 执行指定的逻辑操作.</p>
+<p>仅对具有整数和规范化整数格式的attachment执行逻辑操作.</p>
+<p>支持的logical 操作</p>
+<blockquote>
+<ul>
+<li>CLEAR: Setting the color to zero</li>
+<li>AND: Bitwise AND operation between the source (fragment’s) color and a<br>destination color (already stored in an attachment)</li>
+<li>AND_REVERSE: Bitwise AND operation between source and inverted destination<br>colors</li>
+<li>COPY: Copying the source (fragment’s) color without any modifications<br>AND_INVERTED: Bitwise AND operation between destination and inverted source<br>colors</li>
+<li>NO_OP: Leaving the already stored color intact</li>
+<li>XOR: Bitwise excluded OR between source and destination colors</li>
+<li>OR: Bitwise OR operation between the source and destination colors</li>
+<li>NOR: Inverted bitwise OR</li>
+<li>EQUIVALENT: Inverted XOR</li>
+<li>INVERT: Inverted destination color</li>
+<li>OR_REVERSE: Bitwise OR between the source color and inverted destination color</li>
+<li>COPY_INVERTED: Copying bitwise inverted source color</li>
+<li>OR_INVERTED: Bitwise OR operation between destination and inverted source<br>color</li>
+<li>NAND: Inverted bitwise AND operation<br>SET: Setting all color bits to ones</li>
+</ul>
+</blockquote>
+<p>blending操作对给定graphic pipeline的subpass的每个color attachment是分开的.也就是说需要给每个color attachment指定blending 参数.但如果independentBlend特性没有启用,每个attachment的blending参数必须一样.</p>
+<p>对blending,我们为color components和alpha component分别指明source和destination factors.支持的blend factors包括:</p>
+<blockquote>
+<ul>
+<li>ZERO: 0</li>
+<li>ONE: 1</li>
+<li>SRC_COLOR: <source component></li>
+<li>ONE_MINUS_SRC_COLOR: 1 - <source component></li>
+<li>DST_COLOR: <destination component></destination></li>
+<li>ONE_MINUS_DST_COLOR: 1 - <destination component></destination></li>
+<li>SRC_ALPHA: <source alpha></li>
+<li>ONE_MINUS_SRC_ALPHA: 1 - <source alpha></li>
+<li>DST_ALPHA: <destination alpha></destination></li>
+<li>ONE_MINUS_DST_ALPHA: 1 - <destination alpha></destination></li>
+<li>CONSTANT_COLOR: <constant color component></constant></li>
+<li>ONE_MINUS_CONSTANT_COLOR: 1 - <constant color component></constant></li>
+<li>CONSTANT_ALPHA: <alpha value of a constant color></alpha></li>
+<li>ONE_MINUS_CONSTANT_ALPHA: 1 - <alpha value of a constant color></alpha></li>
+<li>SRC_ALPHA_SATURATE: min( <source alpha>, 1 - <destination alpha><br>)</destination></li>
+<li>SRC1_COLOR: &lt;component of a source’s second color&gt; (used in dual<br>source blending)</li>
+<li>ONE_MINUS_SRC1_COLOR: 1 - &lt;component of a source’s second color&gt;<br>(from dual source blending)</li>
+<li>SRC1_ALPHA: &lt;alpha component of a source’s second color&gt; (in dual<br>source blending)</li>
+<li>ONE_MINUS_SRC1_ALPHA: 1 - &lt;alpha component of a source’s second<br>color&gt; (from dual source blending)</li>
+</ul>
+</blockquote>
+<p>有些blendingg factors使用constant color而不是fragment的(source)color或者存储在attachment的color(destination).这个constant color可以在创建Pipeline是静态指定货在command buffer recording调用vkCmdSetBlendConstants()动态设置.</p>
+<p>其中use the source’s second color(SRC1)只在dualSrcBlend特性开启式有效.</p>
+<p>控制如何blending的blending function也能为color和alpha分量分开指定.Blending operators包括:</p>
+<blockquote>
+<ul>
+<li>ADD: <src component> <em> <src factor> + <dst component> </dst></src></em> <dst factor></dst></src></li>
+<li>SUBTRACT: <src component> <em> <src factor> - <dst component> </dst></src></em><dst factor></dst></src></li>
+<li>REVERSE_SUBTRACT: <dst component> <em> <dst factor> - <src component> </src></dst></em> <src factor></src></dst></li>
+<li>MIN: min( <src component>, <dst component> )</dst></src></li>
+<li>MAX: max( <src component>, <dst component> )</dst></src></li>
+</ul>
+</blockquote>
+<p> Enabling a logical operation disables blending.</p>
+<p>下面是disabled logical operation和blending操作的blend state的例子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPipelineColorBlendAttachmentState&gt; attachment_blend_states =</span><br><span class="line">&#123;</span><br><span class="line">  &#123;</span><br><span class="line">  <span class="literal">false</span>,</span><br><span class="line">  VK_BLEND_FACTOR_ONE,</span><br><span class="line">  VK_BLEND_FACTOR_ONE,</span><br><span class="line">  VK_BLEND_OP_ADD,</span><br><span class="line">  VK_BLEND_FACTOR_ONE,</span><br><span class="line">  VK_BLEND_FACTOR_ONE,</span><br><span class="line">  VK_BLEND_OP_ADD,</span><br><span class="line">  VK_COLOR_COMPONENT_R_BIT |</span><br><span class="line">  VK_COLOR_COMPONENT_G_BIT |</span><br><span class="line">  VK_COLOR_COMPONENT_B_BIT |</span><br><span class="line">  VK_COLOR_COMPONENT_A_BIT</span><br><span class="line">  &#125;</span><br><span class="line"> &#125;;</span><br><span class="line"> VkPipelineColorBlendStateCreateInfo blend_state_create_info;</span><br><span class="line"> SpecifyPipelineBlendState( <span class="literal">false</span>, VK_LOGIC_OP_COPY,</span><br><span class="line"> attachment_blend_states, &#123; <span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span>, <span class="number">1.0f</span> &#125;,</span><br><span class="line"> blend_state_create_info );</span><br></pre></td></tr></table></figure>
+<p> 这种recipe实现fillsVkPipelineColorBlendStateCreateInfo如下</p>
+ <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">blend_state_create_info = &#123;</span><br><span class="line"> VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,</span><br><span class="line"> <span class="literal">nullptr</span>,</span><br><span class="line"> <span class="number">0</span>,</span><br><span class="line"> logic_op_enable,</span><br><span class="line"> logic_op,</span><br><span class="line"> <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(attachment_blend_states.size()),</span><br><span class="line"> attachment_blend_states.data(),</span><br><span class="line"> &#123;</span><br><span class="line">     blend_constants[<span class="number">0</span>],</span><br><span class="line">     blend_constants[<span class="number">1</span>],</span><br><span class="line">     blend_constants[<span class="number">2</span>],</span><br><span class="line">     blend_constants[<span class="number">3</span>]</span><br><span class="line"> &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-pipeline-dynamic-states"><a href="#Specifying-pipeline-dynamic-states" class="headerlink" title="Specifying pipeline dynamic states"></a>Specifying pipeline dynamic states</h3><p>创建graphic pipeline要求提供很多参数,且不再能修改,专业能提高性能,能给驱动提供稳定的可预测的环境.但不幸的是,给开发者造成了不便,使得可能需要创建很多pipeline objects–但只有很少的不同.</p>
+<p>为了避免这个问题,引入了dynamic states.它允许我们再command bufferrecording specific函数动态控制pipeline的参数.为了做到这,需要指明pipeline的那部分时dynamic.这通过指明pipeline dynamic states实现.</p>
+<p>VkDynamicState</p>
+<blockquote>
+<ul>
+<li>VK_DYNAMIC_STATE_VIEWPORT</li>
+<li>VK_DYNAMIC_STATE_SCISSOR</li>
+<li>VK_DYNAMIC_STATE_LINE_WIDTH</li>
+<li>VK_DYNAMIC_STATE_DEPTH_BIAS</li>
+<li>VK_DYNAMIC_STATE_BLEND_CONSTANTS</li>
+<li>VK_DYNAMIC_STATE_DEPTH_BOUNDS</li>
+<li>VK_DYNAMIC_STATE_STENCIL_COMPARE_MASK</li>
+<li>VK_DYNAMIC_STATE_STENCIL_WRITE_MASK</li>
+<li>VK_DYNAMIC_STATE_STENCIL_REFERENCE</li>
+</ul>
+</blockquote>
+<p>dynamic pipeline states被引入允许设置pipeline objects的state.在命令缓冲区记录期间,可能没有太多不同的管道部分可以设置,但是选择需要在性能、驱动程序的简单性、现代硬件的功能和API的易用性之间的折衷.</p>
+<p>dynamic state时可选的.</p>
+<p>一下是可以被动态设置的部分:</p>
+<blockquote>
+<ul>
+<li>Viewport</li>
+<li>Scissor</li>
+<li>Line width</li>
+<li>Depth bias</li>
+<li>Stencil compare mask</li>
+<li>Stencil write mask</li>
+<li>Stencil reference value</li>
+<li>Blend constants</li>
+</ul>
+</blockquote>
+<p>通过VkDynamicState数组指明哪些state需要动态设置,然后通过VkPipelineDynamicStateCreateInfo结构记录</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineDynamicStateCreateInfo dynamic_state_creat_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(dynamic_states.size()),</span><br><span class="line">    dynamic_states.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="pipeline"><a href="#pipeline" class="headerlink" title="pipeline"></a>pipeline</h2><h3 id="Creating-a-pipeline-layout"><a href="#Creating-a-pipeline-layout" class="headerlink" title="Creating a pipeline layout"></a>Creating a pipeline layout</h3><p>Pipeline layouts和descriptor set layouts类似.Descriptor set layouts用来定义什么类型的resources形成descriptor set.Pipeline layouts定义什么类型的资源能被pipeline 访问.它们通过descriptor set layouts创建并push constant ranges</p>
+<p>在pipeline创建时需要pipeline layouts,因为它们通过a set,binding,array element address指明了shader stages和shader resources间的接口.shaders使用同样的address(through a lyout qualifier)能访问给定resources.但是,即使给定的管道不使用任何描述符资源,我们也需要创建一个管道布局来通知驱动程序不需要这样的接口.</p>
+<p>pipeline layout定义了pipeline 的shaders能访问的resources集合.当record command buffers时,我们绑定descriptor set to 选定的indices(Binding descriptor sets).descriptor set layout的index与关联的Pipeline layout的数组的index一致.同样的index在shaders中通过layout(set = <index>,binding=<number>)qualifier指定以访问所给资源.</number></index></p>
+<p><img src="media/pipelinelayout.png" alt></p>
+<p>通常multiple pipelines会访问不同的resources.在command buffer recording,绑定pipeilne 和descriptor sets.只有这样才能issue dcs.当我们切换pipeline,需要根据pipeline的需要绑定信的descriptor sets.但频繁绑定不同descriptor sets会影响app的性能.这也是创建由相似(or compatible)layouts的pipelines和绑定不常改变的descriptor sets(that are common for many pipelines)到indices接近0(或靠近layout开始的地方).这样,当我们switch pipelines,descriptor sets.这样,当切换pipelines时,descriptor sets靠近pipeline layout 开始的地方(from index 0 to some index N)能继续用且不用更新.只有在绑定不同descriptor sets(由更高indices,在index N之后),才有必要.但需要注意,为了similar(or compatible),pipeline layouts必须由相同的push constant ranges.</p>
+<p>我们需要将很多pipelines通用的descriptor sets绑定到pipeline layout靠近开始的地方(near the $0^{th}$ index)</p>
+<p>pipeline layouts也定义了push constants的ranges.能提供一个小的constant values集合给shaders.比更新descriptor sets快,但memory更小,最少只有128bytes(in a pipeline layout).</p>
+<p>比如,我们能给graphics pipeline每个state提供不同的range.每个stage128/5=26bytes.也可以给多个shader stage提供相同的ranges.但每个shader stage只能访问一个push constant range.</p>
+<p>通常是不需要push constant ranges的,所以上述例子是比较糟糕的情况.一般由足够的内存存储若干vec4或1、2个matrix</p>
+<p>需要注意push constant range的size和offset必须为4的倍数.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineLayoutCreateInfo pipeline_layout_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(descriptor_set_layouts.size()),</span><br><span class="line">    descriptor_set_layouts.data(),</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(push_constant_ranges.size()),</span><br><span class="line">    push_constant_ranges.data()</span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreatePipelineLayout( logical_device,</span><br><span class="line">                                         &amp;pipeline_layout_create_info, <span class="literal">nullptr</span>, &amp;pipeline_layout );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create pipeline layout."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Specifying-graphics-pipeline-creation-parameters"><a href="#Specifying-graphics-pipeline-creation-parameters" class="headerlink" title="Specifying graphics pipeline creation parameters"></a>Specifying graphics pipeline creation parameters</h3><p>创建graphic pipeline需要填VkGraphicsPipelineCreateInfo提供很多控制不同方面的内容的参数.</p>
+<p>在pipeline创建阶段能提供很多VkGraphicsPipelineCreateInfo,每一个指明了会被创建的单个pipeline的属性.</p>
+<p>创建graphic pipeline后,可以在recording a dc前将之绑定到cb.Graphic pipeline只能在render pass绑定cb.在pipeline创建时,我们指明在哪个render pass这个pipeline会被爱使用.如果render pass是compatible那么可以使用同一个pipeline.</p>
+<p>很少pipeline没有公共state.所以为了加快速度,可以$\color{red}{指明一个pipeline称为其他pipeline的parent(allow dervatives)}$,使用VkGraphicsPipelineCreateInfob的basePipelineHandle或basePipelineIndex.</p>
+<p>basePipelineHandle允许我们指明已经存在的pipeline的handle,作为parent</p>
+<p>basePipelineIndex当一次创建多Pipelines时,能指明VkGraphicsPipelineCreateInfo数组的哪个index提供给vkCreateGraphicsPipelines().此索引指向将与子pipeline一起在同一个单函数调用中创建的父管道.因为一起创建的所以无法提供handle.要求是parent的index必须必其他的小.也就是先创建.</p>
+<p>basePipelineHandle和basePipelineIndex不能同时使用.</p>
+<p>下面是一个例子:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    additional_options,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(shader_stage_create_infos.size()),</span><br><span class="line">    shader_stage_create_infos.data(),</span><br><span class="line">    &amp;vertex_input_state_create_info,</span><br><span class="line">    &amp;input_assembly_state_create_info,</span><br><span class="line">    &amp;tessellation_state_create_info,</span><br><span class="line">    &amp;viewport_state_create_info,</span><br><span class="line">    &amp;rasterization_state_create_info,</span><br><span class="line">    &amp;multisample_state_create_info,</span><br><span class="line">    &amp;depth_and_stencil_state_create_info,</span><br><span class="line">    &amp;blend_state_create_info,</span><br><span class="line">    &amp;dynamic_state_creat_info,</span><br><span class="line">    pipeline_layout,</span><br><span class="line">    render_pass,</span><br><span class="line">    subpass,</span><br><span class="line">    base_pipeline_handle,</span><br><span class="line">    base_pipeline_index</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="color-red-Creating-a-pipeline-cache-object"><a href="#color-red-Creating-a-pipeline-cache-object" class="headerlink" title="$\color {red}{Creating\ a\ pipeline\ cache\ object}$"></a>$\color {red}{Creating\ a\ pipeline\ cache\ object}$</h3><p>一个pipeline object不只是对参数进行包装.它包括所有可编程states和fixed pipeline stages的准备,设置shaders和descriptor resources间的interface,compiling和linking shader programs,进行错误检查(检查shaders是否正确linked).这些结果会存在cache里.这个cache能在创建相似属性的pipeline objects是复用加速.</p>
+<p>VkPipelineCacheCreateInfo</p>
+<p>VkPipelineCache</p>
+<p>vkCreatePipelineCache</p>
+<p>pipeline cache存储着一个pipeline preparation process的结果.可选的且能省略的.但能显著加快创建pipeline objects的速度.</p>
+<p>在创建Pipeline时使用cache需要先创建一个pipeline cache object并提供给Pipeline creating function.驱动会自动缓存结果.如果cache有数据,driver自动尝试在创建pipeline时使用它.</p>
+<p>使用pipeline cache object最常用的剧本(scenario)是将它的内容存储到一个file并在相同的app的独立的executions中复用.当启动app时,创建一个所有pipelines需要的empty cache.然后检索这个cache data并存储到file里.下次app执行时,也创建这个cache,但这次从文件读取数据来初始化它.但如果是只创建少量的pipelines,可能不用这么复杂.但是现代3D app都需要大量的pipelines.这种技术能极大加快初始化速度.</p>
+<p>假设cache数据存储在cache_data数组里,可能是空的也可能是从先前创建的数据初始化了,创建pipeline cache的process如下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineCacheCreateInfo pipeline_cache_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(cache_data.size()),</span><br><span class="line">    cache_data.data()</span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreatePipelineCache( logical_device,</span><br><span class="line">                                        &amp;pipeline_cache_create_info, <span class="literal">nullptr</span>, &amp;pipeline_cache );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create pipeline cache."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Retrieving-data-from-a-pipeline-cache"><a href="#Retrieving-data-from-a-pipeline-cache" class="headerlink" title="Retrieving data from a pipeline cache"></a>Retrieving data from a pipeline cache</h3><p>为了能复用pipeline cache,我们需要存储cache的内容并在任何时候复用它.为此,我们检索cache里的数据.</p>
+<p>vkGetPipelineCacheData</p>
+<p>检索pipeliine cache内容是Vulkan里典型的doule-call of a single function.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> data_size = <span class="number">0</span>;</span><br><span class="line">VkResult result = VK_SUCCESS;</span><br><span class="line">result = vkGetPipelineCacheData( logical_device, pipeline_cache,</span><br><span class="line">                                &amp;data_size, <span class="literal">nullptr</span> );</span><br><span class="line"><span class="keyword">if</span>( (VK_SUCCESS != result) ||</span><br><span class="line">   (<span class="number">0</span> == data_size) ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not get the size of the pipeline cache."</span> &lt;&lt;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">pipeline_cache_data.resize( data_size );</span><br><span class="line">result = vkGetPipelineCacheData( logical_device, pipeline_cache,</span><br><span class="line">                                &amp;data_size, pipeline_cache_data.data());</span><br><span class="line"><span class="keyword">if</span>( (VK_SUCCESS != result) ||</span><br><span class="line">   (<span class="number">0</span> == data_size) ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not acquire pipeline cache data."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Merging-multiple-pipeline-cache-objects"><a href="#Merging-multiple-pipeline-cache-objects" class="headerlink" title="Merging multiple pipeline cache objects"></a>Merging multiple pipeline cache objects</h3><p>因为要创建大量的pipelines,为了缩短创建时间,通过多线程将他们创建过程分开.每个线程会使用一个独立的pipeline cache.当都完成后,为了复用cache,需要合并他们到一个cache objects里.</p>
+<p>vkMergePipelineCaches</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkMergePipelineCaches( logical_device,</span><br><span class="line">                                        target_pipeline_cache,</span><br><span class="line">                                        <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(source_pipeline_caches.size()),</span><br><span class="line">                                        source_pipeline_caches.data() );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not merge pipeline cache objects."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>注意合并后的那个cache object不能在vector里.</p>
+<h3 id="Creating-a-grphics-pipeline"><a href="#Creating-a-grphics-pipeline" class="headerlink" title="Creating a grphics pipeline"></a>Creating a grphics pipeline</h3><p>graphics pipeline控制所有drawing相关的操作.通过它我们指明drawing阶段的shader programs,各种测试(depth,stencil)的参数,或者final color如何计算并写入any of the subpass attachments.是最重要的objects之一.能创建一个或一次创建多个.</p>
+<p>vkCreateGraphicsPipelines</p>
+<p>下图白色blocks为可编程stages,灰色为固定管线部分</p>
+<p><img src="media/graphicspipeline1.png" alt></p>
+<p>其中有的是可选的.如果Rasterization关闭,就不需要Fragment stage.如果启用tessellation stage,就需要提供Tessellation control 和 evaluation shaders.</p>
+<p>VkGraphicsPipelineCreateInfo</p>
+<p>VkPipeline</p>
+<p>二者大小相同</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">graphics_pipelines.resize( graphics_pipeline_create_infos.size() );</span><br><span class="line">VkResult result = vkCreateGraphicsPipelines( logical_device,</span><br><span class="line">                                            pipeline_cache,</span><br><span class="line">                                            <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(graphics_pipeline_create_infos.size()),</span><br><span class="line">                                            graphics_pipeline_create_infos.data(), <span class="literal">nullptr</span>, graphics_pipelines.data()</span><br><span class="line">                                           );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a graphics pipeline."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Creating-a-compute-pipeline"><a href="#Creating-a-compute-pipeline" class="headerlink" title="Creating a compute pipeline"></a>Creating a compute pipeline</h3><p>VkPipelineShaderStageCreateInfo</p>
+<p>VkComputePipelineCreateInfo</p>
+<p>VkPipeline</p>
+<p>vkCreateComputePipelines</p>
+<p>一个compute pipeline  只有一个compute shader stage.(尽管硬件可能实现额外的stages)</p>
+<p>compute shader只有一些内置变量,没有输入输出.只能用uniform 变量(buffers or images).所以compute shader更通用,能对images执行数学计算.</p>
+<p>与graphics pipelines类似,也有继承.</p>
+<p>下面是一个简单例子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">VkComputePipelineCreateInfo compute_pipeline_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    additional_options,</span><br><span class="line">    compute_shader_stage,</span><br><span class="line">    pipeline_layout,</span><br><span class="line">    base_pipeline_handle,</span><br><span class="line">    <span class="number">-1</span></span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreateComputePipelines( logical_device, pipeline_cache,</span><br><span class="line">                                           <span class="number">1</span>, &amp;compute_pipeline_create_info, <span class="literal">nullptr</span>, &amp;compute_pipeline );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create compute pipeline."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Binding-a-pipeline-object"><a href="#Binding-a-pipeline-object" class="headerlink" title="Binding a pipeline object"></a>Binding a pipeline object</h3><p>在issue dc或dispatch computational work前,需要设置所有需要的states.其一为cb绑定pipeline object,graphic piepeline 或compute pipeline.</p>
+<p>VkCommandBuffer</p>
+<p>vkCmdBindPipeline</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdBindPipeline( command_buffer, pipeline_type, pipeline );</span><br></pre></td></tr></table></figure>
+<h2 id="example"><a href="#example" class="headerlink" title="example"></a>example</h2><h3 id="Creating-a-pipeline-layout-with-a-combined-image-sampler-a-buffer-and-push-constant-ranges"><a href="#Creating-a-pipeline-layout-with-a-combined-image-sampler-a-buffer-and-push-constant-ranges" class="headerlink" title="Creating a pipeline layout with a combined image sampler, a buffer,and push constant ranges"></a>Creating a pipeline layout with a combined image sampler, a buffer,and push constant ranges</h3><p>fragment有一个image,vertex有一个uniform</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDescriptorSetLayoutBinding&gt; descriptor_set_layout_bindings =</span><br><span class="line">&#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        VK_SHADER_STAGE_FRAGMENT_BIT,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        VK_SHADER_STAGE_VERTEX_BIT,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">if</span>( !CreateDescriptorSetLayout( logical_device,</span><br><span class="line">                               descriptor_set_layout_bindings, descriptor_set_layout ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ranges of push constants</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreatePipelineLayout( logical_device, &#123; descriptor_set_layout &#125;,</span><br><span class="line">                          push_constant_ranges, pipeline_layout ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Creating-a-graphics-pipeline-with-vertex-andfragment-shaders-depth-test-enabled-and-with-dynamic-viewport-and-scissor-tests"><a href="#Creating-a-graphics-pipeline-with-vertex-andfragment-shaders-depth-test-enabled-and-with-dynamic-viewport-and-scissor-tests" class="headerlink" title="Creating a graphics pipeline with vertex andfragment shaders, depth test enabled, and with dynamic viewport and scissor tests"></a>Creating a graphics pipeline with vertex andfragment shaders, depth test enabled, and with dynamic viewport and scissor tests</h3><h2 id="desctroy"><a href="#desctroy" class="headerlink" title="desctroy"></a>desctroy</h2><p>本节介绍一个通用的graphic pipeline 创建过程,vertex shaders,fragment shaders,depth test enabled.动态指明viewport 和 sicssor tests.</p>
+<p>准备vertex和fragment shader stages</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; vertex_shader_spirv;</span><br><span class="line"><span class="keyword">if</span>( !GetBinaryFileContents( vertex_shader_filename, vertex_shader_spirv ) )</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkDestroyer&lt;VkShaderModule&gt; vertex_shader_module( logical_device );</span><br><span class="line"><span class="keyword">if</span>( !CreateShaderModule( logical_device, vertex_shader_spirv,</span><br><span class="line">                        *vertex_shader_module ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; fragment_shader_spirv;</span><br><span class="line"><span class="keyword">if</span>( !GetBinaryFileContents( fragment_shader_filename, fragment_shader_spirv</span><br><span class="line">) ) &#123;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkDestroyer&lt;VkShaderModule&gt; fragment_shader_module( logical_device );</span><br><span class="line"><span class="keyword">if</span>( !CreateShaderModule( logical_device, fragment_shader_spirv,</span><br><span class="line">                        *fragment_shader_module ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;ShaderStageParameters&gt; shader_stage_params = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        VK_SHADER_STAGE_VERTEX_BIT,</span><br><span class="line">        *vertex_shader_module,</span><br><span class="line">        <span class="string">"main"</span>,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        VK_SHADER_STAGE_FRAGMENT_BIT,</span><br><span class="line">        *fragment_shader_module,</span><br><span class="line">        <span class="string">"main"</span>,</span><br><span class="line">        <span class="literal">nullptr</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPipelineShaderStageCreateInfo&gt; shader_stage_create_infos;</span><br><span class="line">SpecifyPipelineShaderStages( shader_stage_params, shader_stage_create_infos</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>然后选择vertex bindings和verte attributes.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineVertexInputStateCreateInfo vertex_input_state_create_info;</span><br><span class="line">SpecifyPipelineVertexInputState( vertex_input_binding_descriptions,</span><br><span class="line">                                vertex_attribute_descriptions, vertex_input_state_create_info );</span><br><span class="line">VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info;</span><br><span class="line">SpecifyPipelineInputAssemblyState( primitive_topology,</span><br><span class="line">                                  primitive_restart_enable, input_assembly_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>Viewport和scissor test参数很重要,因为动态设置,所以只有viewports的数量重要.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">ViewportInfo viewport_infos = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">500.0f</span>,</span><br><span class="line">            <span class="number">500.0f</span>,</span><br><span class="line">            <span class="number">0.0f</span>,</span><br><span class="line">            <span class="number">1.0f</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="number">0</span>,</span><br><span class="line">                <span class="number">0</span></span><br><span class="line">            &#125;,</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="number">500</span>,</span><br><span class="line">                <span class="number">500</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">VkPipelineViewportStateCreateInfo viewport_state_create_info;</span><br><span class="line">SpecifyPipelineViewportAndScissorTestState( viewport_infos,</span><br><span class="line">                                           viewport_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>然后为rasterization 和 multisample states准备参数.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineRasterizationStateCreateInfo rasterization_state_create_info;</span><br><span class="line">SpecifyPipelineRasterizationState( <span class="literal">false</span>, <span class="literal">false</span>, polygon_mode,</span><br><span class="line">                                  culling_mode, front_face, <span class="literal">false</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>,</span><br><span class="line">                                  rasterization_state_create_info );</span><br><span class="line">VkPipelineMultisampleStateCreateInfo multisample_state_create_info;</span><br><span class="line">SpecifyPipelineMultisampleState( VK_SAMPLE_COUNT_1_BIT, <span class="literal">false</span>, <span class="number">0.0f</span>,</span><br><span class="line">                                <span class="literal">nullptr</span>, <span class="literal">false</span>, <span class="literal">false</span>, multisample_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>dpeth test.一般而言需要靠近摄像机的fragment得到保留,所以使用VK_COMPARE_OP_LESS_OR_EQUAL作为比较操作.这里假设stencil test关闭</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">VkStencilOpState stencil_test_parameters = &#123;</span><br><span class="line">    VK_STENCIL_OP_KEEP,</span><br><span class="line">    VK_STENCIL_OP_KEEP,</span><br><span class="line">    VK_STENCIL_OP_KEEP,</span><br><span class="line">    VK_COMPARE_OP_ALWAYS,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span></span><br><span class="line">&#125;;</span><br><span class="line">VkPipelineDepthStencilStateCreateInfo depth_and_stencil_state_create_info;</span><br><span class="line">SpecifyPipelineDepthAndStencilState( <span class="literal">true</span>, <span class="literal">true</span>,</span><br><span class="line">                                    VK_COMPARE_OP_LESS_OR_EQUAL, <span class="literal">false</span>, <span class="number">0.0f</span>, <span class="number">1.0f</span>, <span class="literal">false</span>,</span><br><span class="line">                                    stencil_test_parameters, stencil_test_parameters,</span><br><span class="line">                                    depth_and_stencil_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>blending parameters</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VkPipelineColorBlendStateCreateInfo blend_state_create_info;</span><br><span class="line">SpecifyPipelineBlendState( logic_op_enable, logic_op,</span><br><span class="line">                          attachment_blend_states, blend_constants, blend_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>list of dynamic states</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDynamicState&gt; dynamic_states = &#123;</span><br><span class="line">    VK_DYNAMIC_STATE_VIEWPORT,</span><br><span class="line">    VK_DYNAMIC_STATE_SCISSOR</span><br><span class="line">&#125;;</span><br><span class="line">VkPipelineDynamicStateCreateInfo dynamic_state_create_info;</span><br><span class="line">SpecifyPipelineDynamicStates( dynamic_states, dynamic_state_create_info );</span><br></pre></td></tr></table></figure>
+<p>创建pipeline</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;</span><br><span class="line">SpecifyGraphicsPipelineCreationParameters( additional_options,</span><br><span class="line">                                          shader_stage_create_infos, vertex_input_state_create_info,</span><br><span class="line">                                          input_assembly_state_create_info, <span class="literal">nullptr</span>, &amp;viewport_state_create_info,</span><br><span class="line">                                          rasterization_state_create_info, &amp;multisample_state_create_info,</span><br><span class="line">                                          &amp;depth_and_stencil_state_create_info, &amp;blend_state_create_info,</span><br><span class="line">                                          &amp;dynamic_state_create_info, pipeline_layout, render_pass,</span><br><span class="line">                                          subpass, base_pipeline_handle, <span class="number">-1</span>, graphics_pipeline_create_info );</span><br><span class="line"><span class="keyword">if</span>( !CreateGraphicsPipelines( logical_device, &#123;</span><br><span class="line">    graphics_pipeline_create_info &#125;, pipeline_cache, graphics_pipeline ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="multiple-thread"><a href="#multiple-thread" class="headerlink" title="multiple thread"></a>multiple thread</h2><h3 id="Creating-multiple-graphics-pipelines-on-multiple-threads"><a href="#Creating-multiple-graphics-pipelines-on-multiple-threads" class="headerlink" title="Creating multiple graphics pipelines on multiple threads"></a>Creating multiple graphics pipelines on multiple threads</h3><p>创建graphic pipeline 可能会话很长时间.shader编译链接在pipeline创建时完成,指定给shader的states是否正常.所以有大量pipeline需要创建时最好使用多线程.</p>
+<p>但当有大量pipeline创建时需要使用cachee去加速创建过程.本节会介绍在多并发管道(multiple concurrent pipeline)创建时使用cache并在之后合并cache.</p>
+<p>本节使用VkDestroyer&lt;&gt;模板来自动销毁无用的资源</p>
+<p>流程</p>
+<blockquote>
+<ul>
+<li>cache文件std::string pipeline_cache_filename</li>
+<li>cache从文件加载到std::vector<unsigned char> cache_data;</unsigned></li>
+<li>std::vector<vkpipelinecache> pipeline_caches.为每个独立的thread创建pipeline cache object并存储句柄到pipeline_caches</vkpipelinecache></li>
+<li>std::vector\<a href="std::thread\" target="_blank" rel="noopener">std::thread\</a> threads.  resize</li>
+<li>创建变量std::vector\&lt;std::vector\&lt;VkGraphicsPipelineCreateInfo>>  graphics_pipelines_create_infos.为每个thread添加新的VkGraphicsPipelineCreateInfo graphics_pipelines_create_infos.并存储到线程创建的pipeline数等大的数组里.</li>
+<li>创建变量std::vector\&lt;std::vector\&lt;VkPipeline>>  graphics_pipelines.按照每个thread的pipelines数量resize graphics_pipelines的子数组.</li>
+<li>创建期望数量的threads,每个thread使用logical_device创建选定数量的pipelines,一个cache关联到该thread(pipeline_caches[<thread number>]),一个VkGraphicsPipelineCreateInfo数组关联到该thread(graphics_pipelines_create_infos[<thread number>]).</thread></thread></li>
+<li>等待所有threads结束</li>
+<li>创建一个VkPipelineCache target_cache</li>
+<li>合并pipeline_caches数组到 target_cache.</li>
+<li>遍历target_cache内容,存储到cache_data数组.</li>
+<li>将cache_data存储到文件pipeline_cache_filename</li>
+</ul>
+<p>创建multiple graphics pipeline要求给很多不同pipelines提供很多参数.</p>
+<p>为了速度更快,使用pipeline cache非常有效,首先需要从文件里读取预先存储的cache(如果有的话).然后为每个独立thread创建cache.每个cache需要用文件里加载的cache内容初始化.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">unsigned</span> <span class="keyword">char</span>&gt; cache_data;</span><br><span class="line">&gt; GetBinaryFileContents( pipeline_cache_filename, cache_data );</span><br><span class="line">&gt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDestroyer&lt;VkPipelineCache&gt;&gt; pipeline_caches(</span><br><span class="line">&gt;     graphics_pipelines_create_infos.size() );</span><br><span class="line">&gt; <span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; graphics_pipelines_create_infos.size(); ++i ) &#123;</span><br><span class="line">&gt;     pipeline_caches[i] = VkDestroyer&lt; VkPipelineCache &gt;( logical_device );</span><br><span class="line">&gt;     <span class="keyword">if</span>( !CreatePipelineCacheObject( logical_device, cache_data,</span><br><span class="line">&gt;                                    *pipeline_caches[i] ) ) &#123;</span><br><span class="line">&gt;         <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&gt;     &#125;</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p>下一步是为每个thread创建的pipeline handles准备存储空间.同时开始所有thread使用对应的cache object创建多pipelines.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt;threads( graphics_pipelines_create_infos.size() );</span><br><span class="line">&gt; <span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; graphics_pipelines_create_infos.size(); ++i ) &#123;</span><br><span class="line">&gt;     graphics_pipelines[i].resize( graphics_pipelines_create_infos[i].size()</span><br><span class="line">&gt;                                 );</span><br><span class="line">&gt;     threads[i] = <span class="built_in">std</span>::thread::thread( CreateGraphicsPipelines,</span><br><span class="line">&gt;                                      logical_device, graphics_pipelines_create_infos[i], *pipeline_caches[i],</span><br><span class="line">&gt;                                      graphics_pipelines[i] );</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+<p>等待所有thread完成.然后合并所有cache objects到一个.将新内容存储(replace)到对应文件.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; graphics_pipelines_create_infos.size(); ++i ) &#123;</span><br><span class="line">&gt;     threads[i].join();</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; VkPipelineCache target_cache = *pipeline_caches.back();</span><br><span class="line">&gt; <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPipelineCache&gt; source_caches( pipeline_caches.size() - <span class="number">1</span>);</span><br><span class="line">&gt; <span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; pipeline_caches.size() - <span class="number">1</span>; ++i ) &#123;</span><br><span class="line">&gt;     source_caches[i] = *pipeline_caches[i];</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; <span class="keyword">if</span>( !MergeMultiplePipelineCacheObjects( logical_device, target_cache,</span><br><span class="line">&gt;                                        source_caches ) ) &#123;</span><br><span class="line">&gt;     <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; <span class="keyword">if</span>( !RetrieveDataFromPipelineCache( logical_device, target_cache,</span><br><span class="line">&gt;                                    cache_data ) ) &#123;</span><br><span class="line">&gt;     <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; <span class="keyword">if</span>( !SaveBinaryFile( pipeline_cache_filename, cache_data ) ) &#123;</span><br><span class="line">&gt;     <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&gt; &#125;</span><br><span class="line">&gt; <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<h2 id="Destroy"><a href="#Destroy" class="headerlink" title="Destroy"></a>Destroy</h2><h3 id="Destroy-pipeline"><a href="#Destroy-pipeline" class="headerlink" title="Destroy pipeline"></a>Destroy pipeline</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != pipeline ) &#123;</span><br><span class="line">    vkDestroyPipeline( logical_device, pipeline, <span class="literal">nullptr</span> );</span><br><span class="line">    pipeline = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要确保commands已经完成(通过fences).</p>
+<h3 id="Destroy-a-pipeline-cache"><a href="#Destroy-a-pipeline-cache" class="headerlink" title="Destroy a pipeline cache"></a>Destroy a pipeline cache</h3><p>当用来创建了pipeline,合并cache data,或遍历了内容后可以销毁cache.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != pipeline_cache ) &#123;</span><br><span class="line">    vkDestroyPipelineCache( logical_device, pipeline_cache, <span class="literal">nullptr</span> );</span><br><span class="line">    pipeline_cache = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Destroying-a-pipeline-layout"><a href="#Destroying-a-pipeline-layout" class="headerlink" title="Destroying a pipeline layout"></a>Destroying a pipeline layout</h3><p>当不需要pipeline layout时,也就是不想用它来创建更多pipeline、绑定descriptor sets或更新push constants(给定layout使用的)、使用这个pipeline layout的所有操作已经完成,我们能销毁它.</p>
+<p>Pipeline layouts只在三种情况游泳–创建pipelines,绑定descriptor sets,update push constants.第一种可以用完就销毁,后两种在硬件停止运行相关cbs后销毁</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != pipeline_layout ) &#123;</span><br><span class="line">    vkDestroyPipelineLayout( logical_device, pipeline_layout, <span class="literal">nullptr</span> );</span><br><span class="line">    pipeline_layout = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Destroying-a-shadr-module"><a href="#Destroying-a-shadr-module" class="headerlink" title="Destroying a shadr module"></a>Destroying a shadr module</h3><p>Shader modules只用于创建pipeline objects.完成后能立即销毁.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != shader_module ) &#123;</span><br><span class="line">    vkDestroyShaderModule( logical_device, shader_module, <span class="literal">nullptr</span> );</span><br><span class="line">    shader_module = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+</blockquote>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/16/postprocess/UE4tonemaptounity/" rel="next" title="UE4的Film ACES移植到unity中">
+                <i class="fa fa-chevron-left"></i> UE4的Film ACES移植到unity中
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/" rel="prev" title="Resources and Memory">
+                Resources and Memory <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Graphics-and-Compute-Pipelines"><span class="nav-number">1.</span> <span class="nav-text">Graphics and Compute Pipelines</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.2.</span> <span class="nav-text">介绍</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Shader-Module"><span class="nav-number">1.2.</span> <span class="nav-text">Shader Module</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-shader-module"><span class="nav-number">1.2.1.</span> <span class="nav-text">Creating a shader module</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline-states"><span class="nav-number">1.3.</span> <span class="nav-text">pipeline states</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-pipeline-shader-stages"><span class="nav-number">1.3.1.</span> <span class="nav-text">Specifying pipeline shader stages</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipelinee-vertex-bindign-description-attribute-description-and-input-state"><span class="nav-number">1.3.2.</span> <span class="nav-text">Specifying a pipelinee vertex bindign description,attribute description,and input state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-input-assembly-state"><span class="nav-number">1.3.3.</span> <span class="nav-text">Specifying a pipeline input assembly state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-tessellation-state"><span class="nav-number">1.3.4.</span> <span class="nav-text">Specifying a pipeline tessellation state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-viewport-and-scissor-test-state"><span class="nav-number">1.3.5.</span> <span class="nav-text">Specifying a pipeline viewport and scissor test state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-rasterzation-state"><span class="nav-number">1.3.6.</span> <span class="nav-text">Specifying a pipeline rasterzation state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-multisample-state"><span class="nav-number">1.3.7.</span> <span class="nav-text">Specifying a pipeline multisample state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-depth-and-stencil-state"><span class="nav-number">1.3.8.</span> <span class="nav-text">Specifying a pipeline depth and stencil state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-a-pipeline-blend-state"><span class="nav-number">1.3.9.</span> <span class="nav-text">Specifying a pipeline blend state</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-pipeline-dynamic-states"><span class="nav-number">1.3.10.</span> <span class="nav-text">Specifying pipeline dynamic states</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pipeline"><span class="nav-number">1.4.</span> <span class="nav-text">pipeline</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-pipeline-layout"><span class="nav-number">1.4.1.</span> <span class="nav-text">Creating a pipeline layout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-graphics-pipeline-creation-parameters"><span class="nav-number">1.4.2.</span> <span class="nav-text">Specifying graphics pipeline creation parameters</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#color-red-Creating-a-pipeline-cache-object"><span class="nav-number">1.4.3.</span> <span class="nav-text">$\color {red}{Creating\ a\ pipeline\ cache\ object}$</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Retrieving-data-from-a-pipeline-cache"><span class="nav-number">1.4.4.</span> <span class="nav-text">Retrieving data from a pipeline cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Merging-multiple-pipeline-cache-objects"><span class="nav-number">1.4.5.</span> <span class="nav-text">Merging multiple pipeline cache objects</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-grphics-pipeline"><span class="nav-number">1.4.6.</span> <span class="nav-text">Creating a grphics pipeline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-compute-pipeline"><span class="nav-number">1.4.7.</span> <span class="nav-text">Creating a compute pipeline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binding-a-pipeline-object"><span class="nav-number">1.4.8.</span> <span class="nav-text">Binding a pipeline object</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#example"><span class="nav-number">1.5.</span> <span class="nav-text">example</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-pipeline-layout-with-a-combined-image-sampler-a-buffer-and-push-constant-ranges"><span class="nav-number">1.5.1.</span> <span class="nav-text">Creating a pipeline layout with a combined image sampler, a buffer,and push constant ranges</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-a-graphics-pipeline-with-vertex-andfragment-shaders-depth-test-enabled-and-with-dynamic-viewport-and-scissor-tests"><span class="nav-number">1.5.2.</span> <span class="nav-text">Creating a graphics pipeline with vertex andfragment shaders, depth test enabled, and with dynamic viewport and scissor tests</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#desctroy"><span class="nav-number">1.6.</span> <span class="nav-text">desctroy</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#multiple-thread"><span class="nav-number">1.7.</span> <span class="nav-text">multiple thread</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Creating-multiple-graphics-pipelines-on-multiple-threads"><span class="nav-number">1.7.1.</span> <span class="nav-text">Creating multiple graphics pipelines on multiple threads</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Destroy"><span class="nav-number">1.8.</span> <span class="nav-text">Destroy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Destroy-pipeline"><span class="nav-number">1.8.1.</span> <span class="nav-text">Destroy pipeline</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Destroy-a-pipeline-cache"><span class="nav-number">1.8.2.</span> <span class="nav-text">Destroy a pipeline cache</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Destroying-a-pipeline-layout"><span class="nav-number">1.8.3.</span> <span class="nav-text">Destroying a pipeline layout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Destroying-a-shadr-module"><span class="nav-number">1.8.4.</span> <span class="nav-text">Destroying a shadr module</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

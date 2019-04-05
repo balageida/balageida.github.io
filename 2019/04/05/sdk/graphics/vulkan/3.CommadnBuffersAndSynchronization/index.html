@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Command Buffers and Synchronization[TOC] 内容Creating a command poolAllocating command buffersBeginning a command buffer recording operationEnding a command buffer recording operationResetting a comman">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Command Buffers and Synchronization">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Command Buffers and Synchronization[TOC] 内容Creating a command poolAllocating command buffersBeginning a command buffer recording operationEnding a command buffer recording operationResetting a comman">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/media/cbsemaphore.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/media/cbsemaphore2.png">
+<meta property="og:updated_time" content="2019-04-05T13:16:47.190Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Command Buffers and Synchronization">
+<meta name="twitter:description" content="Command Buffers and Synchronization[TOC] 内容Creating a command poolAllocating command buffersBeginning a command buffer recording operationEnding a command buffer recording operationResetting a comman">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/media/cbsemaphore.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Command Buffers and Synchronization | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/3.CommadnBuffersAndSynchronization/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Command Buffers and Synchronization
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:16:47" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Command-Buffers-and-Synchronization"><a href="#Command-Buffers-and-Synchronization" class="headerlink" title="Command Buffers and Synchronization"></a>Command Buffers and Synchronization</h1><p>[TOC]</p>
+<h2 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h2><p>Creating a command pool<br>Allocating command buffers<br>Beginning a command buffer recording operation<br>Ending a command buffer recording operation<br>Resetting a command buffer<br>Resetting a command pool<br>Creating a semaphore<br>Creating a fence<br>Waiting for fences<br>Resetting fences<br>Submitting command buffers to a queue<br>Synchronizing two command buffers<br>Checking if processing of a submitted command buffer has finished<br>Waiting until all commands submitted to a queue are finished<br>Waiting for all submitted commands to be finished<br>Destroying a fence<br>Destroying a semaphore<br>Freeing command buffers<br>Destroying a command pool</p>
+<p>Vulkan的low-level APIs给予了我们队硬件更多的控制权.包括对资源的创建、管理、操作，以及与硬件的交互.command buffer是最重要的object.它允许我们记录操作并提交给硬件执行.更重要的是能在多线程中记录他们,而且是由驱动隐形记录并不需要开发者控制它们.vulkan允许我们重复使用已经存在的command buffers.给予了便利的同时也让开发者有更多的责任.</p>
+<p>为此需要格外小心命令的提交,尤其要处理提交command buffer到GPU时如何同步,为此引入了semaphores和fences.</p>
+<p>本节讨论command buffers的allocate、record、submit,如何创建synchronizatin primitives并使用它们控制提交操作,如何同步GPU上的command buffers,如何同步app和硬件.</p>
+<h2 id="command-pool"><a href="#command-pool" class="headerlink" title="command pool"></a>command pool</h2><h3 id="创建command-pool"><a href="#创建command-pool" class="headerlink" title="创建command pool"></a>创建command pool</h3><p>command pool是command buffer申请缓存的地方.缓存是隐性和动态创建的,但如果没有它command buffer就没地方记录commands了.所以先创建command pool</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VkCommandPoolCreateInfo command_pool_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    parameters,</span><br><span class="line">    queue_family</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>VK_COMMAND_POOL_CREATE_TRANSIENT_BIT 从pool里申请一个cb,存在非常短的时间.</p>
+<p>VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,能立即重置cb.如果没有这个flag,我们只能通过group进行操作(pool的cbs一起).如果没有这个flag,只能记录一次cb.如果想再次记录,需要重置整个pool.</p>
+<p>command pools控制command buffers提交的队列.这二十用过queue family index实现,必须在创建Pool时提供.特定pool提供的cb只能提交给特定的family.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateCommandPool( logical_device,</span><br><span class="line">&amp;command_pool_create_info, <span class="literal">nullptr</span>, &amp;command_pool );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create command pool."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>command pools在多线程里不能同时被访问.这就是为什么将在其上记录命令缓冲区的每个应用程序线程都应该使用单独的command pools的原因.</p>
+<h2 id="command-buffer"><a href="#command-buffer" class="headerlink" title="command buffer"></a>command buffer</h2><h3 id="allocate-command-buffers"><a href="#allocate-command-buffers" class="headerlink" title="allocate command buffers"></a>allocate command buffers</h3><p>command buffers从command pools进行aloocate,这运行我们控制整个groups的一些属性.</p>
+<blockquote>
+<ul>
+<li>只能提交到当创建command pool时选择的family的queue里.</li>
+<li>command pools不能异步使用,所以需要为每个线程创建自己的command pools,减少同步消耗,提升性能</li>
+</ul>
+</blockquote>
+<p>command buffers也有自己的属性,一些是记录操作时指定,但在allocate command buffer时有一些重要参数,是否想allocate主或次command buffers:</p>
+<blockquote>
+<ul>
+<li>primary command buffers能直接提交到queues.也能执行(call)次command buffers.</li>
+<li>次command buffers只能通过主command buffers执行.不能提交.</li>
+</ul>
+</blockquote>
+<p>这些参数通过VkCommandBufferAllocateInfo指定</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkCommandBufferAllocateInfo command_buffer_allocate_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    command_pool,</span><br><span class="line">    level,</span><br><span class="line">    count</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>allocate</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">command_buffers.resize( count );</span><br><span class="line">VkResult result = vkAllocateCommandBuffers( logical_device,</span><br><span class="line">&amp;command_buffer_allocate_info, &amp;command_buffers[<span class="number">0</span>] );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not allocate command buffers."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="开始command-buffer-record操作"><a href="#开始command-buffer-record操作" class="headerlink" title="开始command buffer record操作"></a>开始command buffer record操作</h3><p>当想用硬件执行操作时,需要记录它们并提交给queue.命令记录在command buffers里.当我们记录它们时,我们需要选择一个command buffer.</p>
+<p>vulkan里能做的最重要的事情就是记录command buffers了.也是告诉硬件做什么怎么做的唯一方式.当开始record command buffers时,它们的状态时无定义的.通常,command buffer不继承任何状态.当我们记录操作时,我们需要记住设置与这些操作相关的状态.比如drawing command,使用vertex attributes和indices.在我们记录一次drawing操作前,需要用顶点数据和索引数据绑定到各自适当的缓冲区.</p>
+<p>主command buffers能call(执行)记录在次command buffers里的命令.执行次command buffers不继承主command buffers的状态.主command buffer的状态在执行次command buffer后也是未定义的(当我们record 一个主command buffer,并且执行了它的一个次command buffer后,我们如果想继续record主command buffer,需要重新设置状态).只有一个意外的state继承规则–当主command buffer在一个render pass里,我们执行一个它的次command buffer,主command buffer的render pass和subpass states被保持着.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VkCommandBufferBeginInfo command_buffer_begin_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    usage,</span><br><span class="line">    secondary_command_buffer_info</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>为了性能考虑,需要避免command buffer使用下列标记</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">K_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT</span><br></pre></td></tr></table></figure>
+<p>开始记录</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkBeginCommandBuffer( command_buffer,</span><br><span class="line">&amp;command_buffer_begin_info );</span><br><span class="line">if( VK_SUCCESS != result ) &#123;</span><br><span class="line">    std::cout &lt;&lt; &quot;Could not begin command buffer recording operation.&quot; &lt;&lt;</span><br><span class="line">    std::endl;</span><br><span class="line">    return false;</span><br><span class="line">&#125;</span><br><span class="line">return true;</span><br></pre></td></tr></table></figure>
+<p>现在可以向command buffer选择操作了.但我们如何知道哪些操作可以记录到command buffer里.这类函数的名字以vkCmd开头,第一个参数全是VkCommandBuffer.但需要记住不是所有命令都能给主和次command buffers使用.</p>
+<h3 id="结束command-buffer-recording-operation"><a href="#结束command-buffer-recording-operation" class="headerlink" title="结束command buffer recording operation"></a>结束command buffer recording operation</h3><p>当我们不想记录更多commands到command buffer,我们需要停止recording它.</p>
+<p>为了更快记录和更小影响性能,记录commands时不会有任何报错,所有错误都在vkEndCommandBuffer函数汇报.</p>
+<p>所以停止record时需要判断record是否成功</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkEndCommandBuffer( command_buffer );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during command buffer recording."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>如果报错,就不能submit它,而需要重置它.</p>
+<h3 id="重置command-buffer"><a href="#重置command-buffer" class="headerlink" title="重置command buffer"></a>重置command buffer</h3><p>如果一个command buffer报错了,必须reset才能重新record.可以通过开始另一个record操作来隐性重置它,也可以显示做到这点.</p>
+<p>可以通过重置整个command pool来重置command buffers.也可以独立进行.只有在使用K_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT标志创建了用于分配命令缓冲区的池时,才能执行单独的重置.</p>
+<p>显示重置让我们控制command buffer从创建它的pool里申请欢成.在显示重置时,我们能决定是否向归还缓存给pool,或者是否command buffer需要继续保留并在下次command record时复用它.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkResetCommandBuffer( command_buffer, release_resources ?</span><br><span class="line">VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT : <span class="number">0</span> );</span><br><span class="line">    <span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during command buffer reset."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="重置command-pool"><a href="#重置command-pool" class="headerlink" title="重置command pool"></a>重置command pool</h3><p>当我们不想单独重置command buffer或者如果我们创建的pool没有标记VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,我们能一次重置pool的所有command buffer.</p>
+<p>重置command pool会导致所有由它创建的command buffers回到初始状态.这和单独重置所有command buffers一样,但更快速.并且没有指定VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT标记.</p>
+<p>当command buffers被record,它们从pool里得到缓存,这被自动执行.当重置command buffer时,可以选择是否command buffers保留它们的缓存以备后用,或者返回给pool.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkResetCommandPool( logical_device, command_pool,</span><br><span class="line">release_resources ? VK_COMMAND_POOL_RESET_RELEASE_RESOURCES_BIT : <span class="number">0</span> );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during command pool reset."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="semaphore-和-fence"><a href="#semaphore-和-fence" class="headerlink" title="semaphore 和 fence"></a>semaphore 和 fence</h2><h3 id="创建semaphore"><a href="#创建semaphore" class="headerlink" title="创建semaphore"></a>创建semaphore</h3><p>在提交commands和利用(utilize)设备的处理能力前,我们需要知道如何同步操作.semaphores时用于同步的原语(primitives).它们允许我们不仅在一个队列中而且在一个逻辑设备中的不同队列之间协调提交到队列的操作.</p>
+<p>semaphores当我们提交commands给queus使用.所以在我们使用它们前需要创建.</p>
+<p>semaphores由两个状态:signaled或者unsignaled.semaphores在command buffer提交时使用.我们将它们提供给一个要发出信号的信号量列表时,一旦给定批中提交的所有工作完成,它们就会将状态更改为signaled.相同方式,当我们提交commands给queues,我们能指定提交的commands进入等待状态直到特定list里的所有semaphores变为signaled.通过这种方式,我们可以协调提交到队列的工作,并推迟对依赖于其他命令结果的命令的处理.</p>
+<p>当所有semaphores处于signaled且所有等待它们的命令恢复(变为un-signaled)然后复用.</p>
+<p>semaphores也用于从swapchain请求images,此时,semaphores必须当我们向相关的images提交commands时使用.这些commands必须等待知道images不再被presentation engine使用.</p>
+<p><img src="media/cbsemaphore.png" alt></p>
+<p>vkCreateSemaphore</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">VkSemaphoreCreateInfo semaphore_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span></span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreateSemaphore( logical_device,</span><br><span class="line">&amp;semaphore_create_info, <span class="literal">nullptr</span>, &amp;semaphore );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a semaphore."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>semaphores只能用于同步提交给queues的工作,位于硬件核心.app不能获得semaphore的状态,如果app需要同步提交了的commands需要使用fences.</p>
+<h3 id="创建fences"><a href="#创建fences" class="headerlink" title="创建fences"></a>创建fences</h3><p>fences是用来同步app和提交给图形硬件的commands的.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">VkFenceCreateInfo fence_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    signaled ? VK_FENCE_CREATE_SIGNALED_BIT : <span class="number">0</span></span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreateFence( logical_device, &amp;fence_create_info,</span><br><span class="line"><span class="literal">nullptr</span>, &amp;fence );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a fence."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="wait-fences"><a href="#wait-fences" class="headerlink" title="wait fences"></a>wait fences</h3><p>vkWaitForFences</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( fences.size() &gt; <span class="number">0</span> ) &#123;</span><br><span class="line">    VkResult result = vkWaitForFences( logical_device,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(fences.size()), &amp;fences[<span class="number">0</span>], wait_for_all, timeout );</span><br><span class="line">    <span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waiting on fence failed."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="reset-fences"><a href="#reset-fences" class="headerlink" title="reset fences"></a>reset fences</h3><p>semaphores自动reset,但当fence标记为signaled后,app负责reset.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( fences.size() &gt; <span class="number">0</span> ) &#123;</span><br><span class="line">    VkResult result = vkResetFences( logical_device,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(fences.size()), &amp;fences[<span class="number">0</span>] );</span><br><span class="line">    <span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred when tried to reset fences."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> VK_SUCCESS == result;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="submit"><a href="#submit" class="headerlink" title="submit"></a>submit</h2><h3 id="submit-command-buffers-to-a-queue"><a href="#submit-command-buffers-to-a-queue" class="headerlink" title="submit command buffers to a queue"></a>submit command buffers to a queue</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">WaitSemaphoreInfo</span> &#123;</span></span><br><span class="line">    VkSemaphore Semaphore;</span><br><span class="line">    VkPipelineStageFlags WaitingStage;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkSemaphore&gt; wait_semaphore_handles;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPipelineStageFlags&gt; wait_semaphore_stages;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; wait_semaphore_info : wait_semaphore_infos ) &#123;</span><br><span class="line">wait_semaphore_handles.emplace_back( wait_semaphore_info.Semaphore );</span><br><span class="line">wait_semaphore_stages.emplace_back( wait_semaphore_info.WaitingStage );</span><br><span class="line">&#125;</span><br><span class="line">VkSubmitInfo submit_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_SUBMIT_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(wait_semaphore_infos.size()),</span><br><span class="line">    wait_semaphore_handles.size() &gt; <span class="number">0</span> ? &amp;wait_semaphore_handles[<span class="number">0</span>] : <span class="literal">nullptr</span>,</span><br><span class="line">    wait_semaphore_stages.size() &gt; <span class="number">0</span> ? &amp;wait_semaphore_stages[<span class="number">0</span>] : <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(command_buffers.size()),</span><br><span class="line">    command_buffers.size() &gt; <span class="number">0</span> ? &amp;command_buffers[<span class="number">0</span>] : <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(signal_semaphores.size()),</span><br><span class="line">    signal_semaphores.size() &gt; <span class="number">0</span> ? &amp;signal_semaphores[<span class="number">0</span>] : <span class="literal">nullptr</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">VkResult result = vkQueueSubmit( <span class="built_in">queue</span>, <span class="number">1</span>, &amp;submit_info, fence );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during command buffer submission."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>出于性能考虑,需要尽可能在少的dc中提交更多的batches</p>
+<p>当一个cb提交后还没执行完,不能再次提交,除非使用flag:VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,但为了性能考虑要尽量避免这个flag.</p>
+<h3 id="同步两个cb"><a href="#同步两个cb" class="headerlink" title="同步两个cb"></a>同步两个cb</h3><p>semaphores</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct WaitSemaphoreInfo &#123;</span><br><span class="line">    VkSemaphore Semaphore;</span><br><span class="line">    VkPipelineStageFlags WaitingStage;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkSemaphore&gt; first_signal_semaphores;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; semaphore_info : synchronizing_semaphores ) &#123;</span><br><span class="line">	first_signal_semaphores.emplace_back( semaphore_info.Semaphore );</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( first_queue, first_wait_semaphore_infos,</span><br><span class="line">first_command_buffers, first_signal_semaphores, VK_NULL_HANDLE ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里同时使用handles和pipeline stages,第二个batch会等待特定pipeline stages的所有semaphores,这意味着提交的cbs部分会开始执行,当到达提供的stages时会暂停</p>
+<p><img src="media/cbsemaphore2.png" alt></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( second_queue, synchronizing_semaphores,</span><br><span class="line">second_command_buffers, second_signal_semaphores, second_fence ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>这显示了如何同步从同一逻辑设备提交到不同队列的多个命令缓冲区的工作.从第二次提交开始的命令缓冲区处理将被推迟,直到第一批中的所有命令完成.</p>
+<h3 id="检查提交后的cb是否完成"><a href="#检查提交后的cb是否完成" class="headerlink" title="检查提交后的cb是否完成"></a>检查提交后的cb是否完成</h3><p>当使用semaphores时,app没有被cb的同步给牵制.</p>
+<p>当我们想知道cb何时结束,我们需要使用fences</p>
+<p>创建fence,准备cb,提交给queue,记住提交时使用的fence</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( <span class="built_in">queue</span>, wait_semaphore_infos,</span><br><span class="line">command_buffers, signal_semaphores, fence ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后等待</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">return</span> WaitForFences( logical_device, &#123; fence &#125;, VK_FALSE, timeout );</span><br></pre></td></tr></table></figure>
+<p>这样可以确保cb成功执行才开始接下来的任务.</p>
+<p>但是,通常,渲染不应该造成app完全暂停.我们需要检查fence是否signaled,如果没有,就继续执行其他任务,比如ai、物理.当fence signaled,然后执行需要以来提交的commands状态的任务.</p>
+<p>fences在我们想reuse cb时也有用,在我们re-cecord它们前,必须确保不再被device执行.我们需要有一定数量的command buffers 一个接一个 记录和提交.只有这样,我们使用其中一个时,就启动一个fence(每个submitted batch需要有一个关联的fence).分批的cb越多,花费在等待fences上的时间越少.(但效率不一定)</p>
+<h3 id="等待queue的所有commands结束"><a href="#等待queue的所有commands结束" class="headerlink" title="等待queue的所有commands结束"></a>等待queue的所有commands结束</h3><p>并不总希望使用fences,app等待选择的queue执行结束也是可行的.</p>
+<p>vkQueueWaitIdle</p>
+<p>但这种同步在非常罕见的情况下执行.GPU比CPU快且可能需要不断提交工作以充分利用申请的性能.</p>
+<p>在应用程序端执行等待可能会在图形硬件的管道中造成停顿，从而导致设备的利用效率低下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkQueueWaitIdle( <span class="built_in">queue</span> );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waiting for all operations submitted to queue failed."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="等待提交的commands结束"><a href="#等待提交的commands结束" class="headerlink" title="等待提交的commands结束"></a>等待提交的commands结束</h3><p>这种等待一般要关闭app和想要销毁创建的资源时用到</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkDeviceWaitIdle( logical_device );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Waiting on a device failed."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="destroy"><a href="#destroy" class="headerlink" title="destroy"></a>destroy</h2><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != fence ) &#123;</span><br><span class="line">    vkDestroyFence( logical_device, fence, <span class="literal">nullptr</span> );</span><br><span class="line">    fence = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if( VK_NULL_HANDLE != semaphore ) &#123;</span><br><span class="line">    vkDestroySemaphore( logical_device, semaphore, nullptr );</span><br><span class="line">    semaphore = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">if( command_buffers.size() &gt; 0 ) &#123;</span><br><span class="line">    vkFreeCommandBuffers( logical_device, command_pool,</span><br><span class="line">    static_cast&lt;uint32_t&gt;(command_buffers.size()), &amp;command_buffers[0] );</span><br><span class="line">    command_buffers.clear();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if( VK_NULL_HANDLE != command_pool ) &#123;</span><br><span class="line">    vkDestroyCommandPool( logical_device, command_pool, nullptr );</span><br><span class="line">    command_pool = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/2.ImagePresentation/" rel="next" title="Image Presentation">
+                <i class="fa fa-chevron-left"></i> Image Presentation
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/调试相关/" rel="prev" title="关于调试">
+                关于调试 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Command-Buffers-and-Synchronization"><span class="nav-number">1.</span> <span class="nav-text">Command Buffers and Synchronization</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#内容"><span class="nav-number">1.1.</span> <span class="nav-text">内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#command-pool"><span class="nav-number">1.2.</span> <span class="nav-text">command pool</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建command-pool"><span class="nav-number">1.2.1.</span> <span class="nav-text">创建command pool</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#command-buffer"><span class="nav-number">1.3.</span> <span class="nav-text">command buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#allocate-command-buffers"><span class="nav-number">1.3.1.</span> <span class="nav-text">allocate command buffers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#开始command-buffer-record操作"><span class="nav-number">1.3.2.</span> <span class="nav-text">开始command buffer record操作</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结束command-buffer-recording-operation"><span class="nav-number">1.3.3.</span> <span class="nav-text">结束command buffer recording operation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重置command-buffer"><span class="nav-number">1.3.4.</span> <span class="nav-text">重置command buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重置command-pool"><span class="nav-number">1.3.5.</span> <span class="nav-text">重置command pool</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#semaphore-和-fence"><span class="nav-number">1.4.</span> <span class="nav-text">semaphore 和 fence</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建semaphore"><span class="nav-number">1.4.1.</span> <span class="nav-text">创建semaphore</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建fences"><span class="nav-number">1.4.2.</span> <span class="nav-text">创建fences</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#wait-fences"><span class="nav-number">1.4.3.</span> <span class="nav-text">wait fences</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reset-fences"><span class="nav-number">1.4.4.</span> <span class="nav-text">reset fences</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#submit"><span class="nav-number">1.5.</span> <span class="nav-text">submit</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#submit-command-buffers-to-a-queue"><span class="nav-number">1.5.1.</span> <span class="nav-text">submit command buffers to a queue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步两个cb"><span class="nav-number">1.5.2.</span> <span class="nav-text">同步两个cb</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#检查提交后的cb是否完成"><span class="nav-number">1.5.3.</span> <span class="nav-text">检查提交后的cb是否完成</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#等待queue的所有commands结束"><span class="nav-number">1.5.4.</span> <span class="nav-text">等待queue的所有commands结束</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#等待提交的commands结束"><span class="nav-number">1.5.5.</span> <span class="nav-text">等待提交的commands结束</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#destroy"><span class="nav-number">1.6.</span> <span class="nav-text">destroy</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="说明在创建了Vulkan Instance 对象后，下一步就是枚举physical devices,选择其中一个,并根据它创建又给logical device,这些操作通过instance-level级函数进行执行. Vulkan里几乎所有工作都是在logical device上执行的：在其上创建资源，管理他们的内存，记录由它们创建的command buffers,向他们的queues提交处理c">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Device">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="说明在创建了Vulkan Instance 对象后，下一步就是枚举physical devices,选择其中一个,并根据它创建又给logical device,这些操作通过instance-level级函数进行执行. Vulkan里几乎所有工作都是在logical device上执行的：在其上创建资源，管理他们的内存，记录由它们创建的command buffers,向他们的queues提交处理c">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/media/queue.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/media/logicdevice.png">
+<meta property="og:updated_time" content="2019-04-05T13:18:57.695Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Device">
+<meta name="twitter:description" content="说明在创建了Vulkan Instance 对象后，下一步就是枚举physical devices,选择其中一个,并根据它创建又给logical device,这些操作通过instance-level级函数进行执行. Vulkan里几乎所有工作都是在logical device上执行的：在其上创建资源，管理他们的内存，记录由它们创建的command buffers,向他们的queues提交处理c">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/media/queue.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Device | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/1.2.Device/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Device
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:18:57" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>在创建了Vulkan Instance 对象后，下一步就是枚举physical devices,选择其中一个,并根据它创建又给logical device,这些操作通过instance-level级函数进行执行.</p>
+<p>Vulkan里几乎所有工作都是在logical device上执行的：在其上创建资源，管理他们的内存，记录由它们创建的command buffers,向他们的queues提交处理commands.</p>
+<h2 id="physical-device"><a href="#physical-device" class="headerlink" title="physical device"></a>physical device</h2><h3 id="枚举所有可以使用的physical-devices"><a href="#枚举所有可以使用的physical-devices" class="headerlink" title="枚举所有可以使用的physical devices"></a>枚举所有可以使用的physical devices</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint32_t</span> devices_count = <span class="number">0</span>;</span><br><span class="line">vkEnumeratePhysicalDevices( instance, &amp;devices_count,</span><br><span class="line"><span class="literal">nullptr</span> ).</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPhysicalDevice&gt; available_devices(devices_count);</span><br><span class="line">vkEnumeratePhysicalDevices( instance, &amp;devices_count,</span><br><span class="line">&amp;available_devices[<span class="number">0</span>]).</span><br></pre></td></tr></table></figure>
+<h3 id="extensions"><a href="#extensions" class="headerlink" title="extensions"></a>extensions</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">uint32_t extensions_count = 0;</span><br><span class="line">vkEnumerateDeviceExtensionProperties(physical_device,nullptr,&amp;extensions_count,nullptr);</span><br><span class="line">std::vector&lt;VkExtensionProperties&gt; available_extensions(extensions_count);</span><br><span class="line">vkEnumerateDeviceExtensionProperties(physical_device,nullptr,&amp;extensions_count,&amp;available_extensions[0]);</span><br></pre></td></tr></table></figure>
+<h3 id="获取pyhsical-device的features和properties"><a href="#获取pyhsical-device的features和properties" class="headerlink" title="获取pyhsical device的features和properties"></a>获取pyhsical device的features和properties</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vkEnumeratePhysicalDevices()</span><br><span class="line">VkPhysicalDeviceFeatures device_features;//支持的特性,支持的shader类型(是否支持geometry,tessellation),depth clamp 和 bias,multiple viewports,或者wide lines.</span><br><span class="line">VkPhysicalDeviceProperties device_properties;//物理设备的属性,名字,驱动版本,api支持版本,设备类型(可能是CPU),limits(texture大小,buffer数量)</span><br><span class="line">vkGetPhysicalDeviceFeatures(physical_device, &amp;device_features);</span><br><span class="line">vkGetPhysicalDeviceProperties(physical_device,&amp;device_properties);</span><br></pre></td></tr></table></figure>
+<h2 id="logic-device"><a href="#logic-device" class="headerlink" title="logic device"></a>logic device</h2><h3 id="检查可用的queue-families和他们的properties"><a href="#检查可用的queue-families和他们的properties" class="headerlink" title="检查可用的queue families和他们的properties"></a>检查可用的queue families和他们的properties</h3><p>在vulkan里,对硬件的所有操作都是通过提交到queues里进行的.提交到同一个queue里的命令是一个接着一个执行的,提交到不同queue里的命令是独立的(需要同步他们)</p>
+<p><img src="media/queue.png" alt></p>
+<p>不同的queues可能表示硬件的不同部分,因此会支持不同的操作,并非所有操作都可以在所有queue上执行.</p>
+<p>有相同策略的queue被聚合在同样的family里,一个device可能暴露任意数量的queue families，每一个family可能包括一个或多个queues.要想检查硬件能执行什么操作,需要便利所有queue families的属性.</p>
+<p>步骤</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">uint32_t queue_families_count = 0;</span><br><span class="line">vkGetPhysicalDeviceQueueFamilyProperties( physical_device,</span><br><span class="line">&amp;queue_families_count, nullptr ).</span><br><span class="line">std::vector&lt;VkQueueFamilyProperties&gt; queue_families(queue_families_count);</span><br><span class="line">vkGetPhysicalDeviceQueueFamilyProperties(physical_device,</span><br><span class="line">&amp;queue_families_count, &amp;queue_families[0]);</span><br></pre></td></tr></table></figure>
+<p>从properties中能获取到的最重要的信息是能在已给family的queues里进行的操作类型,操作类型被分为:</p>
+<blockquote>
+<ul>
+<li>Graphics:创建graphics pipelines和drawing</li>
+<li>Compute:创建compute pipelines和dispatching compute shaders</li>
+<li>Transfer:用于非常快速的memory-copying操作</li>
+<li>Sparse:允许附加的内存管理功能</li>
+</ul>
+</blockquote>
+<p>family的queues可能支持不知一种操作,可能不同的queue families支持相同类型的操作.</p>
+<p>family属性也告知了queues的数量,是否支持时间戳,图像传输操作的粒度(在copy/blit操作时能控制的图像的最小部分).</p>
+<p>创建logic device需要的queue families数量,属性,每个family可用的queues数量准备好后,只在创建logical device时请求他们,需要制定需要多少queue以及来自哪些families，当创建好logic device后,对应的queue也自动被创建,我们只需要获得请求的queue的handles.</p>
+<h3 id="重要属性-TODO"><a href="#重要属性-TODO" class="headerlink" title="重要属性 TODO"></a>重要属性 TODO</h3><h3 id="选择期望的queue-family"><a href="#选择期望的queue-family" class="headerlink" title="选择期望的queue family"></a>选择期望的queue family</h3><p>选择一个physical device</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">uint32_t queue_family_index = 0;</span><br><span class="line">VkQueueFlags desired_capabilities;//将期望的操作类型存储到该flag</span><br><span class="line">//VK_QUEUE_GRAPHICS_BIT,VK_QUEUE_COMPUTE_BIT,</span><br><span class="line">//VK_QUEUE_TRANSFER_BIT or VK_QUEUE_SPARSE_BINDING_BIT</span><br><span class="line">std::vector&lt;VkQueueFamilyProperties&gt; queue_families;</span><br><span class="line">//将上文获取到的结果存储到queue_families</span><br><span class="line">对queue_families所有元素进行判断</span><br><span class="line">	检查其queues数量是否&gt;0</span><br><span class="line">	检查desired_capabilities变量和queueFlags逻辑与操作不为0</span><br><span class="line">	如果二者都通过,则存储索引到queue_family_index并跳出循环</span><br><span class="line">重复上述操作知道所有元素被检查</span><br></pre></td></tr></table></figure>
+<h3 id="创建logical-devcie"><a href="#创建logical-devcie" class="headerlink" title="创建logical devcie"></a>创建logical devcie</h3><p>logical device是app里创建的最重要的object,它代表了真实硬件,包括所有的扩展和激活的特性,以及向它请求的所有队列.</p>
+<p><img src="media/logicdevice.png" alt></p>
+<p>logical device允许我们做渲染软件里的所有工作，比如创建images和buffers，设置pipeline state或者加载shaders.最终要的是记录commands(比如draw calls或者分发computational works)和提交它们到queues.</p>
+<h4 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h4><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">QueueInfo</span> &#123;</span></span><br><span class="line"><span class="keyword">uint32_t</span> FamilyIndex;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">float</span>&gt; Priorities;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkExtensionProperties&gt; available_extensions;</span><br><span class="line"><span class="keyword">if</span>( !CheckAvailableDeviceExtensions( physical_device, available_extensions</span><br><span class="line">) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; extension : desired_extensions ) &#123;</span><br><span class="line">    <span class="keyword">if</span>( !IsExtensionSupported( available_extensions, extension ) ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Extension named '"</span> &lt;&lt; extension &lt;&lt; <span class="string">"' is not supported by</span></span><br><span class="line"><span class="string">    a physical device."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDeviceQueueCreateInfo&gt; queue_create_infos;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; info : queue_infos ) &#123;</span><br><span class="line">queue_create_infos.push_back( &#123;</span><br><span class="line">VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,</span><br><span class="line"><span class="literal">nullptr</span>,</span><br><span class="line"><span class="number">0</span>,</span><br><span class="line">info.FamilyIndex,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(info.Priorities.size()),</span><br><span class="line">info.Priorities.size() &gt; <span class="number">0</span> ? &amp;info.Priorities[<span class="number">0</span>] : <span class="literal">nullptr</span></span><br><span class="line">&#125; );</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//Layers和extensions为非必需的</span></span><br><span class="line"><span class="comment">//但如果想使用高级特性(geometry,tessellation shaders)需要激活他们，</span></span><br><span class="line"><span class="comment">//不需要的特性可以关闭它们（有一些特性可能会影响性能）</span></span><br><span class="line">VkDeviceCreateInfo device_create_info = &#123;</span><br><span class="line">VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,</span><br><span class="line"><span class="literal">nullptr</span>,</span><br><span class="line"><span class="number">0</span>,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(queue_create_infos.size()),</span><br><span class="line">queue_create_infos.size() &gt; <span class="number">0</span> ? &amp;queue_create_infos[<span class="number">0</span>] : <span class="literal">nullptr</span>,</span><br><span class="line"><span class="number">0</span>,</span><br><span class="line"><span class="literal">nullptr</span>,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(desired_extensions.size()),</span><br><span class="line">desired_extensions.size() &gt; <span class="number">0</span> ? &amp;desired_extensions[<span class="number">0</span>] : <span class="literal">nullptr</span>,</span><br><span class="line">desired_features</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">vkCreateDevice( physical_device, &amp;device_create_info,</span><br><span class="line"><span class="literal">nullptr</span>, &amp;logical_device ).</span><br></pre></td></tr></table></figure>
+<h3 id="获取device-queue"><a href="#获取device-queue" class="headerlink" title="获取device queue"></a>获取device queue</h3><p>device queue是硬件资源,只能获取已有数量的</p>
+<p>前提</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">获取到VkDvice logical_dvice</span><br><span class="line">选取了queueFamilyIndx</span><br><span class="line">选择一个queue_indexx</span><br><span class="line">准备变量VkQueue queue</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">调用</span><br><span class="line">vkGetDeviceQueue(logical_device, queue_family_index,</span><br><span class="line">queue_index, &amp;queue);</span><br></pre></td></tr></table></figure>
+<p>重复上述操作可以获取到所有queue families里的所有queues</p>
+<h3 id="创建有geometry-shaders-graphics和compute-queues的logical-device"><a href="#创建有geometry-shaders-graphics和compute-queues的logical-device" class="headerlink" title="创建有geometry shaders,graphics和compute queues的logical device"></a>创建有geometry shaders,graphics和compute queues的logical device</h3><p>现在现需要美剧所有physical device找到其中支持geometry shaders,graphics和compute queues的来创建logical device</p>
+<p>前期准备</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">声明变量</span><br><span class="line">VkDevice logical_device;</span><br><span class="line">VkQueue graphics_queue;</span><br><span class="line">VkQueue compute_queue;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkPhysicalDevice&gt; physical_devices;</span><br><span class="line">EnumerateAvailablePhysicalDevices( instance, physical_devices );</span><br></pre></td></tr></table></figure>
+<p>对每一个physical device进行如下操作</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; physical_device : physical_devices ) &#123;</span><br><span class="line">    VkPhysicalDeviceFeatures device_features;</span><br><span class="line">    VkPhysicalDeviceProperties device_properties;</span><br><span class="line">    GetTheFeaturesAndPropertiesOfAPhysicalDevice( physical_device,</span><br><span class="line">                                                 device_features, device_properties );</span><br><span class="line">    <span class="comment">//geometry shader</span></span><br><span class="line">    <span class="keyword">if</span>( !device_features.geometryShader ) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        device_features = &#123;&#125;;</span><br><span class="line">        device_features.geometryShader = VK_TRUE;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//graphic queue</span></span><br><span class="line">    <span class="keyword">uint32_t</span> graphics_queue_family_index;</span><br><span class="line">    <span class="keyword">if</span>( !SelectIndexOfQueueFamilyWithDesiredCapabilities( physical_device,</span><br><span class="line">                                                         VK_QUEUE_GRAPHICS_BIT, graphics_queue_family_index ) ) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//compute queue</span></span><br><span class="line">    <span class="keyword">uint32_t</span> compute_queue_family_index;</span><br><span class="line">    <span class="keyword">if</span>( !SelectIndexOfQueueFamilyWithDesiredCapabilities( physical_device,</span><br><span class="line">                                                         VK_QUEUE_COMPUTE_BIT, compute_queue_family_index ) ) &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;QueueInfo&gt; requested_queues = &#123; &#123;</span><br><span class="line">        graphics_queue_family_index, &#123; <span class="number">1.0f</span> &#125; &#125; &#125;;</span><br><span class="line">    <span class="keyword">if</span>( graphics_queue_family_index != compute_queue_family_index ) &#123;</span><br><span class="line">        requested_queues.push_back( &#123; compute_queue_family_index, &#123; <span class="number">1.0f</span> &#125; &#125; );</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>如果graphics和computee queue families有相同的index,我们能使用同一个queue,如果不同就要用两个</p>
+<p>创建logical device</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateLogicalDevice( physical_device, requested_queues, &#123;&#125;,</span><br><span class="line">                         &amp;device_features, logical_device ) ) &#123;</span><br><span class="line">    <span class="keyword">continue</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">if</span>( !LoadDeviceLevelFunctions( logical_device, &#123;&#125; ) ) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    GetDeviceQueue( logical_device, graphics_queue_family_index, <span class="number">0</span>,</span><br><span class="line">                   graphics_queue );</span><br><span class="line">    GetDeviceQueue( logical_device, compute_queue_family_index, <span class="number">0</span>,</span><br><span class="line">                   compute_queue );</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="Destroying-a-logical-device"><a href="#Destroying-a-logical-device" class="headerlink" title="Destroying a logical device"></a>Destroying a logical device</h3><p>按照创建的相反顺序销毁资源</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( logical_device ) &#123;</span><br><span class="line">    vkDestroyDevice( logical_device, <span class="literal">nullptr</span> );</span><br><span class="line">    logical_device = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/7.Shaders/" rel="next" title="Shaders">
+                <i class="fa fa-chevron-left"></i> Shaders
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/" rel="prev" title="Advanced Rendering Techniques">
+                Advanced Rendering Techniques <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#physical-device"><span class="nav-number">2.</span> <span class="nav-text">physical device</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#枚举所有可以使用的physical-devices"><span class="nav-number">2.1.</span> <span class="nav-text">枚举所有可以使用的physical devices</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#extensions"><span class="nav-number">2.2.</span> <span class="nav-text">extensions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取pyhsical-device的features和properties"><span class="nav-number">2.3.</span> <span class="nav-text">获取pyhsical device的features和properties</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#logic-device"><span class="nav-number">3.</span> <span class="nav-text">logic device</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#检查可用的queue-families和他们的properties"><span class="nav-number">3.1.</span> <span class="nav-text">检查可用的queue families和他们的properties</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重要属性-TODO"><span class="nav-number">3.2.</span> <span class="nav-text">重要属性 TODO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#选择期望的queue-family"><span class="nav-number">3.3.</span> <span class="nav-text">选择期望的queue family</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建logical-devcie"><span class="nav-number">3.4.</span> <span class="nav-text">创建logical devcie</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#准备"><span class="nav-number">3.4.1.</span> <span class="nav-text">准备</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#获取device-queue"><span class="nav-number">3.5.</span> <span class="nav-text">获取device queue</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建有geometry-shaders-graphics和compute-queues的logical-device"><span class="nav-number">3.6.</span> <span class="nav-text">创建有geometry shaders,graphics和compute queues的logical device</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Destroying-a-logical-device"><span class="nav-number">3.7.</span> <span class="nav-text">Destroying a logical device</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

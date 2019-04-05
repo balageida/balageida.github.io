@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Lighting说明内容  Rendering a geometry with a vertex diffuse lighting Rendering a geometry with a fragment specular lighting Rendering a normal mapped geometry Drawing a reflective and refractive geometr">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Lighting">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Lighting说明内容  Rendering a geometry with a vertex diffuse lighting Rendering a geometry with a fragment specular lighting Rendering a normal mapped geometry Drawing a reflective and refractive geometr">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/media/phonglighting.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/media/cubemap.png">
+<meta property="og:updated_time" content="2019-04-05T13:20:38.603Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Lighting">
+<meta name="twitter:description" content="Lighting说明内容  Rendering a geometry with a vertex diffuse lighting Rendering a geometry with a fragment specular lighting Rendering a normal mapped geometry Drawing a reflective and refractive geometr">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/media/phonglighting.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Lighting | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/11.Lighting/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Lighting
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:20:38" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Lighting"><a href="#Lighting" class="headerlink" title="Lighting"></a>Lighting</h1><h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h3><blockquote>
+<ul>
+<li>Rendering a geometry with a vertex diffuse lighting</li>
+<li>Rendering a geometry with a fragment specular lighting</li>
+<li>Rendering a normal mapped geometry</li>
+<li>Drawing a reflective and refractive geometry using cubemaps</li>
+<li>Adding shadows to the scene</li>
+</ul>
+</blockquote>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>…</p>
+<h3 id="Rendering-a-geometry-with-a-vertex-diffuse-lighting"><a href="#Rendering-a-geometry-with-a-vertex-diffuse-lighting" class="headerlink" title="Rendering a geometry with a vertex diffuse lighting"></a>Rendering a geometry with a vertex diffuse lighting</h3><p>vertex</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 app_normal;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( location = <span class="number">0</span> ) out <span class="keyword">float</span> vert_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    gl_Position = ProjectionMatrix * ModelViewMatrix *</span><br><span class="line">        app_position;</span><br><span class="line">    vec3 normal = mat3( ModelViewMatrix ) * app_normal;</span><br><span class="line">    vert_color = max( <span class="number">0.0</span>, dot( normal, vec3( <span class="number">0.58</span>, <span class="number">0.58</span>, <span class="number">0.58</span> ) )</span><br><span class="line">                    ) + <span class="number">0.1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in <span class="keyword">float</span> vert_color;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    frag_color = vec4( vert_color );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>…</p>
+<h3 id="Rendering-a-geometry-with-a-fragment-specular-lighting"><a href="#Rendering-a-geometry-with-a-fragment-specular-lighting" class="headerlink" title="Rendering a geometry with a fragment specular lighting"></a>Rendering a geometry with a fragment specular lighting</h3><p><img src="media/phonglighting.png" alt></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec3 vert_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 vert_normal;</span><br><span class="line">layout( push_constant ) uniform LightParameters &#123;</span><br><span class="line">    vec4 Position;</span><br><span class="line">&#125; Light;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec3 normal_vector = normalize( vert_normal );</span><br><span class="line">    vec3 light_vector = normalize( Light.Position.xyz -</span><br><span class="line">                                  vert_position );</span><br><span class="line">    <span class="keyword">float</span> diffuse_term = max( <span class="number">0.0</span>, dot( normal_vector, light_vector</span><br><span class="line">                                      ) );</span><br><span class="line">    frag_color = vec4( diffuse_term + <span class="number">0.1</span> );</span><br><span class="line">    <span class="keyword">if</span>( diffuse_term &gt; <span class="number">0.0</span> ) &#123;</span><br><span class="line">        vec3 view_vector = normalize( vec3( <span class="number">0.0</span>, <span class="number">0.0</span>, <span class="number">0.0</span> ) -</span><br><span class="line">                                     vert_position.xyz );</span><br><span class="line">        vec3 half_vector = normalize( view_vector + light_vector );</span><br><span class="line">        <span class="keyword">float</span> shinniness = <span class="number">60.0</span>;</span><br><span class="line">        <span class="keyword">float</span> specular_term = <span class="built_in">pow</span>( dot( half_vector, normal_vector ),</span><br><span class="line">                                  shinniness );</span><br><span class="line">        frag_color += vec4( specular_term );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="normal-mapeed-geometry"><a href="#normal-mapeed-geometry" class="headerlink" title="normal mapeed geometry"></a>normal mapeed geometry</h3><p>vertex</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 app_normal;</span><br><span class="line">layout( location = <span class="number">2</span> ) in vec2 app_texcoord;</span><br><span class="line">layout( location = <span class="number">3</span> ) in vec3 app_tangent;</span><br><span class="line">layout( location = <span class="number">4</span> ) in vec3 app_bitangent;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec3 vert_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) out vec2 vert_texcoord;</span><br><span class="line">layout( location = <span class="number">2</span> ) out vec3 vert_normal;</span><br><span class="line">layout( location = <span class="number">3</span> ) out vec3 vert_tanget;</span><br><span class="line">layout( location = <span class="number">4</span> ) out vec3 vert_bitanget;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec4 position = ModelViewMatrix * app_position;</span><br><span class="line">    gl_Position = ProjectionMatrix * position;</span><br><span class="line">    vert_position = position.xyz;</span><br><span class="line">    vert_texcoord = app_texcoord;</span><br><span class="line">    vert_normal = mat3( ModelViewMatrix ) * app_normal;</span><br><span class="line">    vert_tanget = mat3( ModelViewMatrix ) * app_tangent;</span><br><span class="line">    vert_bitanget = mat3( ModelViewMatrix ) * app_bitangent;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec3 vert_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec2 vert_texcoord;</span><br><span class="line">layout( location = <span class="number">2</span> ) in vec3 vert_normal;</span><br><span class="line">layout( location = <span class="number">3</span> ) in vec3 vert_tanget;</span><br><span class="line">layout( location = <span class="number">4</span> ) in vec3 vert_bitanget;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">1</span> ) uniform sampler2D ImageSampler;</span><br><span class="line">layout( push_constant ) uniform LightParameters &#123;</span><br><span class="line">    vec4 Position;</span><br><span class="line">&#125; Light;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec3 normal = <span class="number">2</span> * texture( ImageSampler, vert_texcoord ).rgb -</span><br><span class="line">        <span class="number">1.0</span>;</span><br><span class="line">    vec3 normal_vector = normalize( mat3( vert_tanget,</span><br><span class="line">                                         vert_bitanget, vert_normal) * normal );</span><br><span class="line">    vec3 light_vector = normalize( Light.Position.xyz -</span><br><span class="line">                                  vert_position );</span><br><span class="line">    <span class="keyword">float</span> diffuse_term = max( <span class="number">0.0</span>, dot( normal_vector, light_vector</span><br><span class="line">                                      ) ) * max( <span class="number">0.0</span>, dot( vert_normal, light_vector ) );</span><br><span class="line">    frag_color = vec4( diffuse_term + <span class="number">0.1</span> );</span><br><span class="line">    <span class="keyword">if</span>( diffuse_term &gt; <span class="number">0.0</span> ) &#123;</span><br><span class="line">        vec3 half_vector = normalize(normalize( -vert_position.xyz )</span><br><span class="line">                                     + light_vector);</span><br><span class="line">        <span class="keyword">float</span> specular_term = <span class="built_in">pow</span>( dot( half_vector, normal_vector ),</span><br><span class="line">                                  <span class="number">60.0</span> );</span><br><span class="line">        frag_color += vec4( specular_term );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Drawing-a-reflective-and-refractive-geometry-using-cubemaps"><a href="#Drawing-a-reflective-and-refractive-geometry-using-cubemaps" class="headerlink" title="Drawing a reflective and refractive geometry using cubemaps"></a>Drawing a reflective and refractive geometry using cubemaps</h3><p><img src="media/cubemap.png" alt></p>
+<p>order:+X,-X,+Y,-Y,+Z,-Z</p>
+<p>vertex</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 app_normal;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec3 vert_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) out vec3 vert_normal;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vert_position = app_position.xyz;</span><br><span class="line">    vert_normal = app_normal;</span><br><span class="line">    gl_Position = ProjectionMatrix * ModelViewMatrix *</span><br><span class="line">        app_position;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec3 vert_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 vert_normal;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">1</span> ) uniform samplerCube Cubemap;</span><br><span class="line">layout( push_constant ) uniform LightParameters &#123;</span><br><span class="line">    vec4 Position;</span><br><span class="line">&#125; Camera;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec3 view_vector = vert_position - Camera.Position.xyz;</span><br><span class="line">    <span class="keyword">float</span> angle = smoothstep( <span class="number">0.3</span>, <span class="number">0.7</span>, dot( normalize( -</span><br><span class="line">                                                       view_vector ), vert_normal ) );</span><br><span class="line">    vec3 reflect_vector = reflect( view_vector, vert_normal );</span><br><span class="line">    vec4 reflect_color = texture( Cubemap, reflect_vector );</span><br><span class="line">    vec3 refrac_vector = refract( view_vector, vert_normal, <span class="number">0.3</span> );</span><br><span class="line">    vec4 refract_color = texture( Cubemap, refrac_vector );</span><br><span class="line">    frag_color = mix( reflect_color, refract_color, angle );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="add-shadow-to-the-scene"><a href="#add-shadow-to-the-scene" class="headerlink" title="add shadow to the scene"></a>add shadow to the scene</h3>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/10.HelperRecipes/" rel="next" title="Helper Recipes">
+                <i class="fa fa-chevron-left"></i> Helper Recipes
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/1.1.Instance/" rel="prev" title="Instance">
+                Instance <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Lighting"><span class="nav-number">1.</span> <span class="nav-text">Lighting</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rendering-a-geometry-with-a-vertex-diffuse-lighting"><span class="nav-number">1.1.3.</span> <span class="nav-text">Rendering a geometry with a vertex diffuse lighting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Rendering-a-geometry-with-a-fragment-specular-lighting"><span class="nav-number">1.1.4.</span> <span class="nav-text">Rendering a geometry with a fragment specular lighting</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#normal-mapeed-geometry"><span class="nav-number">1.1.5.</span> <span class="nav-text">normal mapeed geometry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Drawing-a-reflective-and-refractive-geometry-using-cubemaps"><span class="nav-number">1.1.6.</span> <span class="nav-text">Drawing a reflective and refractive geometry using cubemaps</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#add-shadow-to-the-scene"><span class="nav-number">1.1.7.</span> <span class="nav-text">add shadow to the scene</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

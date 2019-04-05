@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Shaders[TOC] 说明内容  Converting GLSL shaders to SPIR-V assemblies Writing vertex shaders Writing tessellation control shaders Writing tessellation evaluation shaders Writing geometry shaders Writing fr">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Shaders">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Shaders[TOC] 说明内容  Converting GLSL shaders to SPIR-V assemblies Writing vertex shaders Writing tessellation control shaders Writing tessellation evaluation shaders Writing geometry shaders Writing fr">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/media/tessellation1.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/media/geometryshader1.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/media/computeshader1.png">
+<meta property="og:updated_time" content="2019-04-05T13:20:04.706Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Shaders">
+<meta name="twitter:description" content="Shaders[TOC] 说明内容  Converting GLSL shaders to SPIR-V assemblies Writing vertex shaders Writing tessellation control shaders Writing tessellation evaluation shaders Writing geometry shaders Writing fr">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/media/tessellation1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Shaders | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/7.Shaders/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Shaders
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:20:04" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Shaders"><a href="#Shaders" class="headerlink" title="Shaders"></a>Shaders</h1><p>[TOC]</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h3><blockquote>
+<ul>
+<li>Converting GLSL shaders to SPIR-V assemblies</li>
+<li>Writing vertex shaders</li>
+<li>Writing tessellation control shaders</li>
+<li>Writing tessellation evaluation shaders</li>
+<li>Writing geometry shaders</li>
+<li>Writing fragment shaders</li>
+<li>Writing compute shaders</li>
+<li>Writing a vertex shader that multiplies a vertex position by a projection matrix</li>
+<li>Using push constants in shaders</li>
+<li>Writing a texturing vertex and fragment shaders</li>
+<li>Displaying polygon normals with a geometry shader</li>
+</ul>
+</blockquote>
+<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>3D graphics data(vertices和fragments/pixels)运行在叫做stages的一些列步骤里.某些stages只执行固定操作(只能配置某些扩展操作).单有其他stages需要programmed.控制这些stages的行为的小programs称为shaders.</p>
+<p>vulkan里最主要的5个可编程graphic pipeline stages为vertex,tessellation control,evaluation,geometry,fragment.(1.1.85发布了Raytracing, Mesh Shaders &amp; Other New NVIDIA Extensions，<a href="https://www.phoronix.com/scan.php?page=news_item&amp;px=Vulkan-1.1.85-Released).compute" target="_blank" rel="noopener">https://www.phoronix.com/scan.php?page=news_item&amp;px=Vulkan-1.1.85-Released).compute</a> pipeline有compute shader programs.core Vulkan API 通过SPIR-V的programs控制这些stages.他是一门中间语言,允许我们process graphics data和进行vectors,matrices,images,buffers,samplers的数学计算.这种语言的low-level特性提高了编译时间(compilation times).也使得书写shader困难.所以vulkan sdk提供一个工具链glslangValidator.</p>
+<p>glslangValidator可以将GLSL转换为SPIR-V assemblies.</p>
+<p>本文介绍GLSL,所有programmable stages的shaders实现,如何实现tessellation或texturing,如何使用geometry shaders来debuging.以及将GLSL转换为SPIR-V assemblies(使用glslangValidator).</p>
+<h3 id="Converting-GLSL-shaders-to-SPIR-V-assemblies"><a href="#Converting-GLSL-shaders-to-SPIR-V-assemblies" class="headerlink" title="Converting GLSL shaders to SPIR-V assemblies"></a>Converting GLSL shaders to SPIR-V assemblies</h3><p>shaders与stage</p>
+<blockquote>
+<ul>
+<li>vert for the vertex shader stage</li>
+<li>tesc for the tessellation control shader stage</li>
+<li>tese for the tessellation evaluation shader stage</li>
+<li>geom for the geometry shader stage</li>
+<li>frag for the fragment shader stage</li>
+<li>comp for the compute shader</li>
+</ul>
+</blockquote>
+<h3 id="Writing-vertex-shaders"><a href="#Writing-vertex-shaders" class="headerlink" title="Writing vertex shaders"></a>Writing vertex shaders</h3><p>顶点.</p>
+<p>如果想绘制nosolid geometry,需要在创建logical device是激活fillModeNonSolid属性.</p>
+<p>vertex processing是graphics pipeline第一个stage,主要目的是对顶点进行坐标转换,从局部坐标转换到coordinate system(clip space).这个clip coordinate system用于图形硬件后续步骤.其一为clipping.</p>
+<p>但这个工作也可以延后到tessellation or geeometry shader.</p>
+<p>存储到gl_Position.</p>
+<p>一个例子</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line"><span class="keyword">layout</span>( <span class="keyword">location</span> = <span class="number">0</span> ) <span class="keyword">in</span> <span class="type">vec4</span> app_position;</span><br><span class="line"><span class="type">void</span> main() &#123;</span><br><span class="line">	<span class="built_in">gl_Position</span> = app_position;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Writing-tessellation-control-shaders"><a href="#Writing-tessellation-control-shaders" class="headerlink" title="Writing tessellation control shaders"></a>Writing tessellation control shaders</h3><p>细分.</p>
+<p>需要在创建logical device时激活tessellationShader特性.</p>
+<p>可选的.分为三步,其中两步是可编程的.The first programmable tessellation stage is used to set up parameters that control how the tessellation is performed.通过编写tessellation control shaders指明tessellation factors的值.</p>
+<p>tessellation control and tessellation evaluation shaders是一起用的.</p>
+<p>tessellation stage对patches进行操作.Patches由vertices组成,但与传统polygons不同,$\color {red}{每个patch可能任意个顶点,1~(至少)32个}​$.</p>
+<p>细分是通过在shader代码里指明的inner和outer tessellation factors实现的.inner fctor由内置gl_TessLevelInner[]数组指明patch内部是如何细分的.outer factor 对应的是gl_TessLevelOuter[],定义了如何细分patches的外边缘(outer edges).每个数组元素对应于patches的给定边.</p>
+<p>tessellation control shader对patch的每个vertex执行一次.当前vertex的index为gl_InvocationID.只有当前的可写,但可以通过gl_in[].gl_Position读取input patch的所有vertices.</p>
+<p>一个例子</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line"><span class="keyword">layout</span>( <span class="keyword">vertices</span> = <span class="number">3</span> ) <span class="keyword">out</span>;</span><br><span class="line"><span class="type">void</span> main() &#123;</span><br><span class="line">    <span class="keyword">if</span>( <span class="number">0</span> == <span class="built_in">gl_InvocationID</span> ) &#123;</span><br><span class="line">        <span class="built_in">gl_TessLevelInner</span>[<span class="number">0</span>] = <span class="number">3.0</span>;</span><br><span class="line">        <span class="built_in">gl_TessLevelOuter</span>[<span class="number">0</span>] = <span class="number">3.0</span>;</span><br><span class="line">        <span class="built_in">gl_TessLevelOuter</span>[<span class="number">1</span>] = <span class="number">4.0</span>;</span><br><span class="line">        <span class="built_in">gl_TessLevelOuter</span>[<span class="number">2</span>] = <span class="number">5.0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="built_in">gl_out</span>[<span class="built_in">gl_InvocationID</span>].<span class="built_in">gl_Position</span> = <span class="built_in">gl_in</span>[<span class="built_in">gl_InvocationID</span>].<span class="built_in">gl_Position</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="media/tessellation1.png" alt></p>
+<h3 id="Writing-tessellation-evaluation-shaders"><a href="#Writing-tessellation-evaluation-shaders" class="headerlink" title="Writing tessellation evaluation shaders"></a>Writing tessellation evaluation shaders</h3><p>Tessellation evaluations是tessellation process的第二个可编程stage.当geometry被细分后(subdivided),手机细分的结果形成新的vertices并重新修改它们.我们需要编写tessellation evaluation shaders来获取生成的顶点的位置,并将它们提供给连续的consecutive pipeline stages.</p>
+<p>在这两个着色器之间是根据control stage 提供的参数进行细分的真实过程.tessellation的结果在evaluation stage中用到,生成新的geometry.</p>
+<p>在tessellation evaluation中能控制新的primitives如何对其并形成.我们指定了它们的缠绕顺序(winding order)和生成顶点之间的间距.同时能选择是否在tessellation stage创建isolines, triangles,or quads来改变图元类型.</p>
+<p>新顶点㐊直接创建的,细分器只为新vertices生成重心细分坐标(barycentric tessellation coordinates)(weights),内置变量为gl_TessCoord.我们可以使用这些坐标在形成面片的顶点的原始位置之间进行插值(interpolate),并将新的顶点放置在正确的位置.这也是evaluation shader可以访问所有顶点的原因.(gl_in[].gl_Position)</p>
+<p>三角形通常不用做任何事</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( triangles, equal_spacing, cw ) in;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    gl_Position = gl_in[<span class="number">0</span>].gl_Position * gl_TessCoord.x +</span><br><span class="line">    gl_in[<span class="number">1</span>].gl_Position * gl_TessCoord.y +</span><br><span class="line">    gl_in[<span class="number">2</span>].gl_Position * gl_TessCoord.z;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Writing-geometry-shaders"><a href="#Writing-geometry-shaders" class="headerlink" title="Writing geometry shaders"></a>Writing geometry shaders</h3><p>当绘制Object时,我们提供顶点并指明图元(primitives)类型(points,lines,triangles).在vertex和可选的tessellation stages后,形成了指定的图元类型.可选的可以激活geometry stage并写geometry shaders控制或改变从vertices形成primitives的过程.在geometry shaders甚至可以创建新的primities或销毁已经存在的.</p>
+<p>geometry shaders允许创建额外的vertices混合primitives,删除已经存在的或改变vertices形成的primitive类型.</p>
+<p>它能访问primitvie的所有vertices,且能调整它们.根据这些数据能原文传递或者创建新的vertices和primitives.但不能在一个gs中创建太多vetices.tessellation shaders更适合做这种操作.应尽量减少gs发出的顶点数.</p>
+<p>gs总生成strip primitives.如果想创建独立图元–不形成strip,只需要在合适的时机end a primitive–vertices emitted</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( triangles ) in;</span><br><span class="line">layout( triangle_strip, max_vertices = <span class="number">9</span> ) out;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">int</span> vertex = <span class="number">0</span>; vertex &lt; <span class="number">3</span>; ++vertex ) &#123;</span><br><span class="line">        gl_Position = gl_in[vertex].gl_Position + vec4( <span class="number">0.0</span>, <span class="number">-0.2</span>, <span class="number">0.0</span>, <span class="number">0.0</span> );</span><br><span class="line">        EmitVertex();</span><br><span class="line">        gl_Position = gl_in[vertex].gl_Position + vec4( <span class="number">-0.2</span>, <span class="number">0.2</span>, <span class="number">0.0</span>, <span class="number">0.0</span> );</span><br><span class="line">        EmitVertex();</span><br><span class="line">        gl_Position = gl_in[vertex].gl_Position + vec4( <span class="number">0.2</span>, <span class="number">0.2</span>, <span class="number">0.0</span>, <span class="number">0.0</span> );</span><br><span class="line">        EmitVertex();</span><br><span class="line">        EndPrimitive();<span class="comment">//介绍一个图元,不形成strip</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="media/geometryshader1.png" alt></p>
+<h3 id="Writing-fragment-shaders"><a href="#Writing-fragment-shaders" class="headerlink" title="Writing fragment shaders"></a>Writing fragment shaders</h3><p>fragment对geometry shader后的操作(rasterization,光栅化)的数据进行计算,一般使用屏幕坐标系(screen space coordinate(x,y,depth)).能选择哪个attachment写入颜色.</p>
+<p>geometry 形成的primitives在rasterization过程中转换为fragments(pixels).fragment sahder对每个fragment执行一遍.shader中或framebuffer tests(depth,stencil,scissor tests)中Fragments可能discard,不会成为pixels–这是它们称为fragments而不是pixels的原因.</p>
+<p>fragment sahder最重要的目的是设置写入attachement的颜色.通常进行光照计算和texturing.和compute shaders配合,fragment shader还常用来进行后处理(bloom等)或者defered shading/lighting.同时,只有fragment shader能访问render  pass定义的input attachments.</p>
+<p>一个简单例子</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line"><span class="keyword">layout</span>( <span class="keyword">location</span> = <span class="number">0</span> ) <span class="keyword">out</span> <span class="type">vec4</span> frag_color;</span><br><span class="line"><span class="type">void</span> main() &#123;</span><br><span class="line">	frag_color = <span class="type">vec4</span>( <span class="number">0.8</span>, <span class="number">0.4</span>, <span class="number">0.0</span>, <span class="number">1.0</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Writing-compute-shaders"><a href="#Writing-compute-shaders" class="headerlink" title="Writing compute shaders"></a>Writing compute shaders</h3><p>compute shader常用来数学计算.它们以3D形式的组执行并可能访问a common set of data.同时,很多local groups能一起执行能更快得到结果.</p>
+<p>只能在compute pipeline里使用.</p>
+<p>compute shadeers没有任何早于或晚于pipeline stages的输入或输出.只有compute pipeline stage的.uniform varables必须作为其数据来源.相似,计算结果存储在Uniform variables.</p>
+<p>有些内置变量.用来索引.</p>
+<p>local workgroup中给定compute shader调用的索引</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uvec3 gl_LocalInvocationID</span><br></pre></td></tr></table></figure>
+<p>同时分发的workgroups的数量</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uvec3 gl_NumWorkGroups</span><br></pre></td></tr></table></figure>
+<p>当前workgroup的number</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">uvec3 gl_WorkGroupID</span><br></pre></td></tr></table></figure>
+<p>还有个给当前shader在所有workgroups里所有调用唯一编号的</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">uvec3 gl_GlobalInvocationID;</span><br><span class="line">= gl_WorkGroupID * gl_WorkGroupSize + gl_LocalInvocationID</span><br></pre></td></tr></table></figure>
+<p>local workgroup的size由input layout qualifier定义.在shader里,uvec3 gl_WorkGroupSize也可以获得这个size.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( local_size_x = <span class="number">32</span>, local_size_y = <span class="number">32</span> ) in;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span>, rgba8 ) uniform image2D StorageImage;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec2 z = gl_GlobalInvocationID.xy * <span class="number">0.001</span> - vec2( <span class="number">0.0</span>, <span class="number">0.4</span> );</span><br><span class="line">    vec2 c = z;</span><br><span class="line">    vec4 color = vec4( <span class="number">0.0</span> );</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">int</span> i=<span class="number">0</span>; i&lt;<span class="number">50</span>; ++I ) &#123;</span><br><span class="line">        z.x = z.x * z.x-- z.y * z.y + c.x;</span><br><span class="line">        z.y = <span class="number">2.0</span> * z.x * z.y + c.y;</span><br><span class="line">        <span class="keyword">if</span>( dot( z, z ) &gt; <span class="number">10.0</span> ) &#123;</span><br><span class="line">        color = i * vec4( <span class="number">0.1</span>, <span class="number">0.15</span>, <span class="number">0.2</span>, <span class="number">0.0</span> );</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	imageStore( StorageImage, ivec2( gl_GlobalInvocationID.xy ), color );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><img src="media/computeshader1.png" alt></p>
+<h3 id="Writing-a-vertex-shader-that-multiplies-vertex-position-by-a-projection-matrix"><a href="#Writing-a-vertex-shader-that-multiplies-vertex-position-by-a-projection-matrix" class="headerlink" title="Writing a vertex shader that multiplies vertex position by a projection matrix"></a>Writing a vertex shader that multiplies vertex position by a projection matrix</h3><p>将geometry从local 变换到clip space通常在vertex shader进行,尽管其他vertex processing stage(tessellation or geometry)也能完成这个工作.这个变换通过指明model,view,projection matrices和从app提供三者的值给shader或者合为一个MVP矩阵.最普通和简单的方式是使用uniform buffer.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout(location = <span class="number">0</span>) in vec4 app_position;</span><br><span class="line">layout(<span class="built_in">set</span>=<span class="number">0</span>, binding=<span class="number">0</span>) uniform UniformBuffer &#123;</span><br><span class="line">	mat4 ModelViewProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	gl_Position = ModelViewProjectionMatrix * app_position;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>uniform buffer $0^{th}$ set,$0^{th}$ binding.</p>
+<h3 id="using-push-constants-in-shaders"><a href="#using-push-constants-in-shaders" class="headerlink" title="using push constants in shaders"></a>using push constants in shaders</h3><p>当给shaders提供数据通常使用uniform buffers,storage buffers,或其他descriptor resources.不幸的是更新这样一个 resources可能不太合适,尤其是经常改变数据的时候.</p>
+<p>为了这个目的,需要引入push constants.通过它们我们能用更简单和快速的方法提供数据.单需要fit更小的可用空间.</p>
+<p>使用GLSL shaders里的push constants类似uniform buffers.</p>
+<p>不同之处</p>
+<blockquote>
+<ul>
+<li>1.使用layout(push_constant)</li>
+<li>必须指明instance name</li>
+<li>每个shader只能定义一个</li>
+<li>通过访问instance name of the block 访问push constant</li>
+</ul>
+</blockquote>
+<p>constants在更新频繁的小数据上非常游泳,比如变换矩阵或物理量(time,dt等).需要记住数据的size比descriptor resources小得多.$\color{red}{规范要求push constants至少存储128 bytes数据}$.每个硬件平台可能允许更多的存储,但可能不会大得多.</p>
+<p>在提供颜色的片段明暗器中定义和使用push常量的示例如下:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#version 450</span><br><span class="line">layout( location = 0 ) out vec4 frag_color;</span><br><span class="line">layout( push_constant ) uniform ColorBlock &#123;</span><br><span class="line">	vec4 Color;</span><br><span class="line">&#125; PushConstant;</span><br><span class="line">void main() &#123;</span><br><span class="line">	frag_color = PushConstant.Color;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Writing-texturing-vertex-and-fragment-shaders"><a href="#Writing-texturing-vertex-and-fragment-shaders" class="headerlink" title="Writing texturing vertex and fragment shaders"></a>Writing texturing vertex and fragment shaders</h3><p>vertex shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec2 app_tex_coordinates;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec2 vert_tex_coordinates;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    gl_Position = app_position;</span><br><span class="line">    vert_tex_coordinates = app_tex_coordinates;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec2 vert_tex_coordinates;</span><br><span class="line">layout( <span class="built_in">set</span>=<span class="number">0</span>, binding=<span class="number">0</span> ) uniform sampler2D TextureImage;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	frag_color = texture( TextureImage, vert_tex_coordinates );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="Displaying-polygon-normals-with-a-geometry-shader"><a href="#Displaying-polygon-normals-with-a-geometry-shader" class="headerlink" title="Displaying polygon normals with a geometry shader"></a>Displaying polygon normals with a geometry shader</h3><p>介绍一种简单的检查发现的方法.</p>
+<p>vertex shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec3 app_normal;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 vert_normal;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    gl_Position = ModelViewMatrix * app_position;</span><br><span class="line">    vert_normal = vec4( mat3( ModelViewMatrix ) * app_normal * <span class="number">0.2</span>, <span class="number">0.0</span> );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>view space</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( triangles ) in;</span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 vert_normal[];</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( line_strip, max_vertices = <span class="number">6</span> ) out;<span class="comment">//line</span></span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 geom_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">int</span> vertex = <span class="number">0</span>; vertex &lt; <span class="number">3</span>; ++vertex ) &#123;</span><br><span class="line">        gl_Position = ProjectionMatrix * gl_in[vertex].gl_Position;</span><br><span class="line">        geom_color = vec4( <span class="number">0.2</span> );</span><br><span class="line">        EmitVertex();</span><br><span class="line">        gl_Position = ProjectionMatrix * (gl_in[vertex].gl_Position +</span><br><span class="line">        vert_normal[vertex]);<span class="comment">//normal 方向延长，并变换到clip space</span></span><br><span class="line">        geom_color = vec4( <span class="number">0.6</span> );</span><br><span class="line">        EmitVertex();</span><br><span class="line">        EndPrimitive();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为什么使用一个uniform buffer呢？一般来说cb里步骤越少效率越高</p>
+<p>fragment shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 geom_color;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	frag_color = geom_color;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/一手资料/" rel="next" title="一手资料">
+                <i class="fa fa-chevron-left"></i> 一手资料
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/1.2.Device/" rel="prev" title="Device">
+                Device <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Shaders"><span class="nav-number">1.</span> <span class="nav-text">Shaders</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">内容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Converting-GLSL-shaders-to-SPIR-V-assemblies"><span class="nav-number">1.1.3.</span> <span class="nav-text">Converting GLSL shaders to SPIR-V assemblies</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-vertex-shaders"><span class="nav-number">1.1.4.</span> <span class="nav-text">Writing vertex shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-tessellation-control-shaders"><span class="nav-number">1.1.5.</span> <span class="nav-text">Writing tessellation control shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-tessellation-evaluation-shaders"><span class="nav-number">1.1.6.</span> <span class="nav-text">Writing tessellation evaluation shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-geometry-shaders"><span class="nav-number">1.1.7.</span> <span class="nav-text">Writing geometry shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-fragment-shaders"><span class="nav-number">1.1.8.</span> <span class="nav-text">Writing fragment shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-compute-shaders"><span class="nav-number">1.1.9.</span> <span class="nav-text">Writing compute shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-a-vertex-shader-that-multiplies-vertex-position-by-a-projection-matrix"><span class="nav-number">1.1.10.</span> <span class="nav-text">Writing a vertex shader that multiplies vertex position by a projection matrix</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#using-push-constants-in-shaders"><span class="nav-number">1.1.11.</span> <span class="nav-text">using push constants in shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Writing-texturing-vertex-and-fragment-shaders"><span class="nav-number">1.1.12.</span> <span class="nav-text">Writing texturing vertex and fragment shaders</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Displaying-polygon-normals-with-a-geometry-shader"><span class="nav-number">1.1.13.</span> <span class="nav-text">Displaying polygon normals with a geometry shader</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

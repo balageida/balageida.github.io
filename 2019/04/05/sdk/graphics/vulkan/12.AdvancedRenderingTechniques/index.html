@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Advanced Rendering Techniques[TOC] 说明内容  Drawing a skybox Drawing billboards using geometry shaders Drawing particles using compute and graphics pipelines Rendering a tessellated terrain Rendering a">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Advanced Rendering Techniques">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Advanced Rendering Techniques[TOC] 说明内容  Drawing a skybox Drawing billboards using geometry shaders Drawing particles using compute and graphics pipelines Rendering a tessellated terrain Rendering a">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/media/cubemap.png">
+<meta property="og:updated_time" content="2019-04-05T13:20:45.898Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Advanced Rendering Techniques">
+<meta name="twitter:description" content="Advanced Rendering Techniques[TOC] 说明内容  Drawing a skybox Drawing billboards using geometry shaders Drawing particles using compute and graphics pipelines Rendering a tessellated terrain Rendering a">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/media/cubemap.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Advanced Rendering Techniques | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/12.AdvancedRenderingTechniques/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Advanced Rendering Techniques
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:20:45" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Advanced-Rendering-Techniques"><a href="#Advanced-Rendering-Techniques" class="headerlink" title="Advanced Rendering Techniques"></a>Advanced Rendering Techniques</h1><p>[TOC]</p>
+<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><h3 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h3><blockquote>
+<ul>
+<li>Drawing a skybox</li>
+<li>Drawing billboards using geometry shaders</li>
+<li>Drawing particles using compute and graphics pipelines</li>
+<li>Rendering a tessellated terrain</li>
+<li>Rendering a full-screen quad for post-processing</li>
+<li>Using input attachments for a color correction post-process effect</li>
+</ul>
+</blockquote>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p><img src="media/cubemap.png" alt></p>
+<p>order:right,left,up,down,backward,forward</p>
+<p>vertex</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec3 vert_texcoord;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec3 position = mat3(ModelViewMatrix) * app_position.xyz;</span><br><span class="line">    gl_Position = (ProjectionMatrix * vec4( position, <span class="number">0.0</span> )).xyzz;</span><br><span class="line">    vert_texcoord = app_position.xyz;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec3 vert_texcoord;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">1</span> ) uniform samplerCube Cubemap;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    frag_color = texture( Cubemap, vert_texcoord );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Drawing-billboards-using-geometry-shaders"><a href="#Drawing-billboards-using-geometry-shaders" class="headerlink" title="Drawing billboards using geometry shaders"></a>Drawing billboards using geometry shaders</h2><p>geometry shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( points ) in;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( triangle_strip, max_vertices = <span class="number">4</span> ) out;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec2 geom_texcoord;</span><br><span class="line"><span class="keyword">const</span> <span class="keyword">float</span> SIZE = <span class="number">0.1</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec4 position = gl_in[<span class="number">0</span>].gl_Position;</span><br><span class="line">    gl_Position = ProjectionMatrix * (gl_in[<span class="number">0</span>].gl_Position + vec4(</span><br><span class="line">        -SIZE, SIZE, <span class="number">0.0</span>, <span class="number">0.0</span> ));</span><br><span class="line">    geom_texcoord = vec2( <span class="number">-1.0</span>, <span class="number">1.0</span> );</span><br><span class="line">    EmitVertex();</span><br><span class="line">    gl_Position = ProjectionMatrix * (gl_in[<span class="number">0</span>].gl_Position + vec4(</span><br><span class="line">        -SIZE, -SIZE, <span class="number">0.0</span>, <span class="number">0.0</span> ));</span><br><span class="line">    geom_texcoord = vec2( <span class="number">-1.0</span>, <span class="number">-1.0</span> );</span><br><span class="line">    EmitVertex();</span><br><span class="line">    gl_Position = ProjectionMatrix * (gl_in[<span class="number">0</span>].gl_Position + vec4(</span><br><span class="line">        SIZE, SIZE, <span class="number">0.0</span>, <span class="number">0.0</span> ));</span><br><span class="line">    geom_texcoord = vec2( <span class="number">1.0</span>, <span class="number">1.0</span> );</span><br><span class="line">    EmitVertex();</span><br><span class="line">    gl_Position = ProjectionMatrix * (gl_in[<span class="number">0</span>].gl_Position + vec4(</span><br><span class="line">        SIZE, -SIZE, <span class="number">0.0</span>, <span class="number">0.0</span> ));</span><br><span class="line">    geom_texcoord = vec2( <span class="number">1.0</span>, <span class="number">-1.0</span> );</span><br><span class="line">    EmitVertex();</span><br><span class="line">    EndPrimitive();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="Drawing-particles-using-compute-and-graphics-pipelines"><a href="#Drawing-particles-using-compute-and-graphics-pipelines" class="headerlink" title="Drawing particles using compute and graphics pipelines"></a>Drawing particles using compute and graphics pipelines</h2><p>…</p>
+<h2 id="Rendering-a-tessellated-terrain"><a href="#Rendering-a-tessellated-terrain" class="headerlink" title="Rendering a tessellated terrain"></a>Rendering a tessellated terrain</h2><p>vertex</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec4 app_position;</span><br><span class="line">layout( location = <span class="number">1</span> ) in vec2 app_texcoord;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec2 vert_texcoord;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    gl_Position = app_position;</span><br><span class="line">    vert_texcoord = app_texcoord;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>tessellation control</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec2 vert_texcoord[];</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">1</span> ) uniform sampler2D ImageSampler;</span><br><span class="line">layout( vertices = <span class="number">3</span> ) out;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec2 tesc_texcoord[];</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>( <span class="number">0</span> == gl_InvocationID ) &#123;</span><br><span class="line">        <span class="keyword">float</span> distances[<span class="number">3</span>];</span><br><span class="line">        <span class="keyword">float</span> factors[<span class="number">3</span>];</span><br><span class="line">        <span class="keyword">for</span>( <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">3</span>; ++i ) &#123;</span><br><span class="line">            <span class="keyword">float</span> height = texture( ImageSampler, vert_texcoord[i]</span><br><span class="line">                                  ).x;</span><br><span class="line">            vec4 position = ModelViewMatrix * (gl_in[i].gl_Position +</span><br><span class="line">                                               vec4( <span class="number">0.0</span>, height, <span class="number">0.0</span>, <span class="number">0.0</span> ));</span><br><span class="line">            distances[i] = dot( position, position );</span><br><span class="line">        &#125;</span><br><span class="line">        factors[<span class="number">0</span>] = min( distances[<span class="number">1</span>], distances[<span class="number">2</span>] );</span><br><span class="line">        factors[<span class="number">1</span>] = min( distances[<span class="number">2</span>], distances[<span class="number">0</span>] );</span><br><span class="line">        factors[<span class="number">2</span>] = min( distances[<span class="number">0</span>], distances[<span class="number">1</span>] );</span><br><span class="line">        gl_TessLevelInner[<span class="number">0</span>] = max( <span class="number">1.0</span>, <span class="number">20.0</span> - factors[<span class="number">0</span>] );</span><br><span class="line">        gl_TessLevelOuter[<span class="number">0</span>] = max( <span class="number">1.0</span>, <span class="number">20.0</span> - factors[<span class="number">0</span>] );</span><br><span class="line">        gl_TessLevelOuter[<span class="number">1</span>] = max( <span class="number">1.0</span>, <span class="number">20.0</span> - factors[<span class="number">1</span>] );</span><br><span class="line">        gl_TessLevelOuter[<span class="number">2</span>] = max( <span class="number">1.0</span>, <span class="number">20.0</span> - factors[<span class="number">2</span>] );</span><br><span class="line">    &#125;</span><br><span class="line">    gl_out[gl_InvocationID].gl_Position =</span><br><span class="line">        gl_in[gl_InvocationID].gl_Position;</span><br><span class="line">    tesc_texcoord[gl_InvocationID] =</span><br><span class="line">        vert_texcoord[gl_InvocationID];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>tessellation evaluation shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( triangles, fractional_even_spacing, cw ) in;</span><br><span class="line">layout( location = <span class="number">0</span> ) in vec2 tesc_texcoord[];</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">1</span> ) uniform sampler2D HeightMap;</span><br><span class="line">layout( location = <span class="number">0</span> ) out <span class="keyword">float</span> tese_height;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec4 position = gl_in[<span class="number">0</span>].gl_Position * gl_TessCoord.x +</span><br><span class="line">        gl_in[<span class="number">1</span>].gl_Position * gl_TessCoord.y +</span><br><span class="line">        gl_in[<span class="number">2</span>].gl_Position * gl_TessCoord.z;</span><br><span class="line">    vec2 texcoord = tesc_texcoord[<span class="number">0</span>] * gl_TessCoord.x +</span><br><span class="line">        tesc_texcoord[<span class="number">1</span>] * gl_TessCoord.y +</span><br><span class="line">        tesc_texcoord[<span class="number">2</span>] * gl_TessCoord.z;</span><br><span class="line">    <span class="keyword">float</span> height = texture( HeightMap, texcoord ).x;</span><br><span class="line">    position.y += height;</span><br><span class="line">    gl_Position = position;</span><br><span class="line">    tese_height = height;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>geometry shader</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( triangles ) in;</span><br><span class="line">layout( location = <span class="number">0</span> ) in <span class="keyword">float</span> tese_height[];</span><br><span class="line">layout( <span class="built_in">set</span> = <span class="number">0</span>, binding = <span class="number">0</span> ) uniform UniformBuffer &#123;</span><br><span class="line">    mat4 ModelViewMatrix;</span><br><span class="line">    mat4 ProjectionMatrix;</span><br><span class="line">&#125;;</span><br><span class="line">layout( triangle_strip, max_vertices = <span class="number">3</span> ) out;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec3 geom_normal;</span><br><span class="line">layout( location = <span class="number">1</span> ) out <span class="keyword">float</span> geom_height;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    vec3 v0v1 = gl_in[<span class="number">1</span>].gl_Position.xyz -</span><br><span class="line">        gl_in[<span class="number">0</span>].gl_Position.xyz;</span><br><span class="line">    vec3 v0v2 = gl_in[<span class="number">2</span>].gl_Position.xyz -</span><br><span class="line">        gl_in[<span class="number">0</span>].gl_Position.xyz;</span><br><span class="line">    vec3 normal = normalize( cross( v0v1, v0v2 ) );</span><br><span class="line">    <span class="keyword">for</span>( <span class="keyword">int</span> vertex = <span class="number">0</span>; vertex &lt; <span class="number">3</span>; ++vertex ) &#123;</span><br><span class="line">        gl_Position = ProjectionMatrix * ModelViewMatrix *</span><br><span class="line">            gl_in[vertex].gl_Position;</span><br><span class="line">        geom_height = tese_height[vertex];</span><br><span class="line">        geom_normal = normal;</span><br><span class="line">        EmitVertex();</span><br><span class="line">    &#125;</span><br><span class="line">    EndPrimitive();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>fragment</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#version 450</span></span><br><span class="line">layout( location = <span class="number">0</span> ) in vec3 geom_normal;</span><br><span class="line">layout( location = <span class="number">1</span> ) in <span class="keyword">float</span> geom_height;</span><br><span class="line">layout( location = <span class="number">0</span> ) out vec4 frag_color;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> vec4 green = vec4( <span class="number">0.2</span>, <span class="number">0.5</span>, <span class="number">0.1</span>, <span class="number">1.0</span> );</span><br><span class="line">    <span class="keyword">const</span> vec4 brown = vec4( <span class="number">0.6</span>, <span class="number">0.5</span>, <span class="number">0.3</span>, <span class="number">1.0</span> );</span><br><span class="line">    <span class="keyword">const</span> vec4 white = vec4( <span class="number">1.0</span> );</span><br><span class="line">    vec4 color = mix( green, brown, smoothstep( <span class="number">0.0</span>, <span class="number">0.4</span>,</span><br><span class="line">                                               geom_height ) );</span><br><span class="line">    color = mix( color, white, smoothstep( <span class="number">0.6</span>, <span class="number">0.9</span>, geom_height )</span><br><span class="line">               );</span><br><span class="line">    <span class="keyword">float</span> diffuse_light = max( <span class="number">0.0</span>, dot( geom_normal, vec3( <span class="number">0.58</span>,</span><br><span class="line">                                                           <span class="number">0.58</span>, <span class="number">0.58</span> ) ) );</span><br><span class="line">    frag_color = vec4( <span class="number">0.05</span>, <span class="number">0.05</span>, <span class="number">0.0</span>, <span class="number">0.0</span> ) + diffuse_light *</span><br><span class="line">        color;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="full-screen"><a href="#full-screen" class="headerlink" title="full screen"></a>full screen</h2><h2 id="input-attachments-for-color-correction-post-process-effect"><a href="#input-attachments-for-color-correction-post-process-effect" class="headerlink" title="input attachments for color correction post-process effect"></a>input attachments for color correction post-process effect</h2>
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/1.2.Device/" rel="next" title="Device">
+                <i class="fa fa-chevron-left"></i> Device
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/10.HelperRecipes/" rel="prev" title="Helper Recipes">
+                Helper Recipes <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Advanced-Rendering-Techniques"><span class="nav-number">1.</span> <span class="nav-text">Advanced Rendering Techniques</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#说明"><span class="nav-number">1.1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">内容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.2.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Drawing-billboards-using-geometry-shaders"><span class="nav-number">1.3.</span> <span class="nav-text">Drawing billboards using geometry shaders</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Drawing-particles-using-compute-and-graphics-pipelines"><span class="nav-number">1.4.</span> <span class="nav-text">Drawing particles using compute and graphics pipelines</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Rendering-a-tessellated-terrain"><span class="nav-number">1.5.</span> <span class="nav-text">Rendering a tessellated terrain</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#full-screen"><span class="nav-number">1.6.</span> <span class="nav-text">full screen</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#input-attachments-for-color-correction-post-process-effect"><span class="nav-number">1.7.</span> <span class="nav-text">input attachments for color correction post-process effect</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

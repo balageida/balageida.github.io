@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="关于dll介绍Vulkan API 是硬件厂商提供的,在驱动里.安装Vulkan SDK后，开发者不用关心驱动层,可以通过(windows)vulkan-1.dll或(linux)libvulkan.so.1访问Vulkan API. loadlibrary的方式1234567891011#if defined _WIN32vulkan_library = LoadLibrary( &quot;vulka">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基础知识">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/基础知识/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="关于dll介绍Vulkan API 是硬件厂商提供的,在驱动里.安装Vulkan SDK后，开发者不用关心驱动层,可以通过(windows)vulkan-1.dll或(linux)libvulkan.so.1访问Vulkan API. loadlibrary的方式1234567891011#if defined _WIN32vulkan_library = LoadLibrary( &quot;vulka">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/基础知识/media/device-level.png">
+<meta property="og:updated_time" content="2019-04-05T13:21:03.411Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="基础知识">
+<meta name="twitter:description" content="关于dll介绍Vulkan API 是硬件厂商提供的,在驱动里.安装Vulkan SDK后，开发者不用关心驱动层,可以通过(windows)vulkan-1.dll或(linux)libvulkan.so.1访问Vulkan API. loadlibrary的方式1234567891011#if defined _WIN32vulkan_library = LoadLibrary( &quot;vulka">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/基础知识/media/device-level.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/基础知识/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>基础知识 | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/基础知识/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">基础知识
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:21:03" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h2 id="关于dll"><a href="#关于dll" class="headerlink" title="关于dll"></a>关于dll</h2><h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>Vulkan API 是硬件厂商提供的,在驱动里.安装Vulkan SDK后，开发者不用关心驱动层,可以通过(windows)vulkan-1.dll或(linux)libvulkan.so.1访问Vulkan API.</p>
+<h3 id="loadlibrary的方式"><a href="#loadlibrary的方式" class="headerlink" title="loadlibrary的方式"></a>loadlibrary的方式</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined _WIN32</span></span><br><span class="line">vulkan_library = LoadLibrary( <span class="string">"vulkan-1.dll"</span> );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined __linux</span></span><br><span class="line">vulkan_library = dlopen( <span class="string">"libvulkan.so.1"</span>, RTLD_NOW );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="keyword">if</span>( vulkan_library == <span class="literal">nullptr</span> ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not connect with a Vulkan Runtime library."</span> &lt;&lt;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="加载Vulkan-API函数"><a href="#加载Vulkan-API函数" class="headerlink" title="加载Vulkan API函数"></a>加载Vulkan API函数</h3><h4 id="方式"><a href="#方式" class="headerlink" title="方式"></a>方式</h4><p>第一种方式:可以进行静态链接,并使用vulkan.h里定义的函数原型</p>
+<p>第二种方式:不用vulkan.h了定义的原型,而是动态加载函数指针</p>
+<p>第一种方式简单,但是每次调用函数时都会重定向一次,效率更低</p>
+<p>第二种方式无重定向过程,且可以选择子集,但麻烦点，基本都用这种方式的，这里只介绍这种方式</p>
+<h3 id="方式-1"><a href="#方式-1" class="headerlink" title="方式"></a>方式</h3><p>1.定义VK_NO_PROTOTYPES或者在引入vulkan.h前定义#define VK_NO_PROTOTYPES</p>
+<p>2.创建新文件名为ListOfVulkanFunctions.inl</p>
+<p>输入一下内容</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> EXPORTED_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXPORTED_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> EXPORTED_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> GLOBAL_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLOBAL_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> GLOBAL_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> INSTANCE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> INSTANCE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function,</span></span><br><span class="line">extension )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> DEVICE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DEVICE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function,</span></span><br><span class="line">extension )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br></pre></td></tr></table></figure>
+<p>创建头文件VulkanFunctions.h,输入一下内容</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"vulkan.h"</span></span></span><br><span class="line"><span class="keyword">namespace</span> vkapi &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXPORTED_VULKAN_FUNCTION( name ) extern PFN_##name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLOBAL_LEVEL_VULKAN_FUNCTION( name ) extern PFN_##name</span></span><br><span class="line">name;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION( name ) extern PFN_##name</span></span><br><span class="line">name;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name,</span></span><br><span class="line">extension ) <span class="keyword">extern</span> PFN_#<span class="meta">#name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION( name ) extern PFN_##name</span></span><br><span class="line">name;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name,</span></span><br><span class="line">extension ) <span class="keyword">extern</span> PFN_#<span class="meta">#name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"ListOfVulkanFunctions.inl"</span></span></span><br><span class="line">&#125; <span class="comment">// namespace vkapi</span></span><br></pre></td></tr></table></figure>
+<p>创建源文件VulkanFunctions.cpp,输入一下内容</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"VulkanFunctions.h"</span></span></span><br><span class="line"><span class="keyword">namespace</span> vkapi &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXPORTED_VULKAN_FUNCTION( name ) PFN_##name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLOBAL_LEVEL_VULKAN_FUNCTION( name ) PFN_##name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION( name ) PFN_##name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name,</span></span><br><span class="line">extension ) PFN_#<span class="meta">#name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION( name ) PFN_##name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name,</span></span><br><span class="line">extension ) PFN_#<span class="meta">#name name;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined _WIN32</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LoadFunction GetProcAddress</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined __linux</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> LoadFunction dlsym</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXPORTED_VULKAN_FUNCTION( name ) \</span></span><br><span class="line">name = (PFN_##name)LoadFunction( vulkan_library, #name ); \</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load exported Vulkan function named: "</span> \</span><br><span class="line"><span class="meta">#name &lt;&lt; std::endl; \</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"ListOfVulkanFunctions.inl"</span></span></span><br><span class="line">&#125; <span class="comment">// namespace vkapi</span></span><br></pre></td></tr></table></figure>
+<p>通过在ListOfVulkanFunctions.inl中添加新的函数名可以加载更多vulkan api</p>
+<p>函数名原型:name的原型为PFN_name</p>
+<p>分为3类 </p>
+<p>global-level,instance-level,device-level</p>
+<h4 id="global-level"><a href="#global-level" class="headerlink" title="global-level"></a>global-level</h4><p>创建变量</p>
+<p>PFN_vkEnumerateInstanceExtensionProperties</p>
+<p>PFN_vkEnumerateInstanceLayerProperties</p>
+<p>PFN_vkCreateInstance</p>
+<p>并调用vkGetInstanceProcAddr获取到对于函数指针</p>
+<p>在ListOfVulkanFunctions.inl中添加</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> GLOBAL_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLOBAL_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">GLOBAL_LEVEL_VULKAN_FUNCTION( vkEnumerateInstanceExtensionProperties )</span><br><span class="line">GLOBAL_LEVEL_VULKAN_FUNCTION( vkEnumerateInstanceLayerProperties )</span><br><span class="line">GLOBAL_LEVEL_VULKAN_FUNCTION( vkCreateInstance )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> GLOBAL_LEVEL_VULKAN_FUNCTION</span></span><br></pre></td></tr></table></figure>
+<p>在VulkanFunctions.cpp的#include “ListOfVulkanFunctions.inl”前添加</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> GLOBAL_LEVEL_VULKAN_FUNCTION( name ) \</span></span><br><span class="line">name = (PFN_##name)vkGetInstanceProcAddr( <span class="literal">nullptr</span>, #name ); \</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load global-level function named: "</span> \</span><br><span class="line"><span class="meta">#name &lt;&lt; std::endl; \</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="instance-level"><a href="#instance-level" class="headerlink" title="instance-level"></a>instance-level</h4><p>变量声明一样的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">vkEnumeratePhysicalDevices</span><br><span class="line">vkGetPhysicalDeviceProperties</span><br><span class="line">vkGetPhysicalDeviceFeatures</span><br><span class="line">vkGetPhysicalDeviceQueueFamilyProperties</span><br><span class="line">vkCreateDevice</span><br><span class="line">vkGetDeviceProcAddr</span><br><span class="line">vkDestroyInstance</span><br><span class="line">vkEnumerateDeviceExtensionProperties</span><br></pre></td></tr></table></figure>
+<p>不同之处是，调用vkGetInstanceProcAddr获取函数指针,第一个参数为instance</p>
+<p>如何判断一个函数是instance-level还是device-level?</p>
+<blockquote>
+<p>所有device-level函数第一个参数为VkDevice,VkQueue,VkCommandBuffer，因此所有第一个参数不是这些且不是global-level函数的就是device-level</p>
+</blockquote>
+<p>需要额外注意的是,extensions能引入新的函数,需要加载它们,以便在程序中调用.</p>
+<p>为了加载instance-level函数,对ListOfVulkanFunctions.inl进行更新</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> INSTANCE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION( vkEnumeratePhysicalDevices )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION( vkGetPhysicalDeviceProperties )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION( vkGetPhysicalDeviceFeatures )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION( vkCreateDevice )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION( vkGetDeviceProcAddr )</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> INSTANCE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function, extension</span></span><br><span class="line">)</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(</span><br><span class="line">vkGetPhysicalDeviceSurfaceSupportKHR, VK_KHR_SURFACE_EXTENSION_NAME )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(</span><br><span class="line">vkGetPhysicalDeviceSurfaceCapabilitiesKHR, VK_KHR_SURFACE_EXTENSION_NAME )</span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION(</span><br><span class="line">vkGetPhysicalDeviceSurfaceFormatsKHR, VK_KHR_SURFACE_EXTENSION_NAME )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> VK_USE_PLATFORM_WIN32_KHR</span></span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkCreateWin32SurfaceKHR,</span><br><span class="line">VK_KHR_WIN32_SURFACE_EXTENSION_NAME )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined VK_USE_PLATFORM_XCB_KHR</span></span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkCreateXcbSurfaceKHR,</span><br><span class="line">VK_KHR_XLIB_SURFACE_EXTENSION_NAME )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined VK_USE_PLATFORM_XLIB_KHR</span></span><br><span class="line">INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkCreateXlibSurfaceKHR,</span><br><span class="line">VK_KHR_XCB_SURFACE_EXTENSION_NAME )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br></pre></td></tr></table></figure>
+<p>更新VulkanFunctions.cpp</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION( name ) \</span></span><br><span class="line">name = (PFN_##name)vkGetInstanceProcAddr( instance, #name ); \</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load instance-level Vulkan function named: "</span>\</span><br><span class="line"><span class="meta">#name &lt;&lt; std::endl; \</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INSTANCE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name, extension )</span></span><br><span class="line">\</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; enabled_extension : enabled_extensions ) &#123; \</span><br><span class="line"><span class="keyword">if</span>( <span class="built_in">std</span>::<span class="built_in">string</span>( enabled_extension ) == <span class="built_in">std</span>::<span class="built_in">string</span>( extension ) )</span><br><span class="line">&#123; \</span><br><span class="line">name = (PFN_##name)vkGetInstanceProcAddr( instance, #name ); \</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load instance-level Vulkan function named: "</span></span><br><span class="line">\</span><br><span class="line"><span class="meta">#name &lt;&lt; std::endl; \</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125; \</span><br><span class="line">&#125; \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="device-level"><a href="#device-level" class="headerlink" title="device-level"></a>device-level</h4><p>创建logical device(VkDevice logical_device)后,需要渲染3D场景、计算对象碰撞，运行视频帧的时候</p>
+<blockquote>
+<ul>
+<li><p>与前述基本一样，不同之处在于</p>
+<p>调用vkGetDeviceProcAddr(device,”<function name>“)获得函数指针</function></p>
+</li>
+</ul>
+</blockquote>
+<p>机核所有3D渲染软件都是使用device-level 函数进行工作的,它们用来创建buffers,images,samplers,shaders.使用device-level函数创建pipeline objects,同步primitives,framebuffers和很多其他资源.并且,最重要的,记录之后提交给queues让硬件执行的操作.</p>
+<p>device-level函数可以通过vkGetInstanceProcAddr获取指针,但它不是最理想的.Vulkan被设计为灵活的API,它可以在单个程序里的多个devices上执行操作,但当我们调用vkGetInstanceProcAddr函数,我们不能提供任何与logical device关联的参数,因此这个函数返回的指针不能与device关联.device可能在调用vkGetInstanceProcAddr时都不存在,这是该调用返回一个dispatch函数–根据其参数,调用适用于给定的logical device的函数的实现.但是,这个jump有性能开销:很小但任然会消耗运行时间.</p>
+<p>如果像避免这种不必要的jump且请求已给device的函数指针,我们需要调用vkGetDeviceProcAddr,这样能避免中间调用,这种方式有些缺陷：需要给app里所有device都请求各自的函数的函数指针.如果有多个device，需要给每个logical device自己的函数指针列表.使用C++预处理可以很容易获得已知device的函数的函数指针.</p>
+<p><img src="media/device-level.png" alt></p>
+<p>如何判断函数是device-level?</p>
+<p>第一个参数是VkDevice,VkQueue,VkCommandBuffer</p>
+<p>为了加载device-level函数，需要更新ListOfVulkanFunctions.inl</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> DEVICE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION( function )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION( vkGetDeviceQueue )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION( vkDeviceWaitIdle )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION( vkDestroyDevice )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION( vkCreateBuffer )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION( vkGetBufferMemoryRequirements )</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DEVICE_LEVEL_VULKAN_FUNCTION</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( function, extension )</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkCreateSwapchainKHR,</span><br><span class="line">VK_KHR_SWAPCHAIN_EXTENSION_NAME )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkGetSwapchainImagesKHR,</span><br><span class="line">VK_KHR_SWAPCHAIN_EXTENSION_NAME )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkAcquireNextImageKHR,</span><br><span class="line">VK_KHR_SWAPCHAIN_EXTENSION_NAME )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkQueuePresentKHR,</span><br><span class="line">VK_KHR_SWAPCHAIN_EXTENSION_NAME )</span><br><span class="line">DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( vkDestroySwapchainKHR,</span><br><span class="line">VK_KHR_SWAPCHAIN_EXTENSION_NAME )</span><br><span class="line"><span class="meta">#<span class="meta-keyword">undef</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION</span></span><br></pre></td></tr></table></figure>
+<p>更新VulkanFunctions.cpp</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION( name ) \</span></span><br><span class="line">name = (PFN_##name)vkGetDeviceProcAddr( device, #name ); \</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load device-level Vulkan function named: "</span> <span class="meta">#name</span></span><br><span class="line">&lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; \</span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEVICE_LEVEL_VULKAN_FUNCTION_FROM_EXTENSION( name,</span></span><br><span class="line">extension ) \</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; enabled_extension : enabled_extensions ) &#123; \</span><br><span class="line"><span class="keyword">if</span>( <span class="built_in">std</span>::<span class="built_in">string</span>( enabled_extension ) == <span class="built_in">std</span>::<span class="built_in">string</span>( extension )</span><br><span class="line">) &#123; \</span><br><span class="line">name = (PFN_##name)vkGetDeviceProcAddr( logical_device, #name );\</span><br><span class="line"><span class="keyword">if</span>( name == <span class="literal">nullptr</span> ) &#123; \</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not load device-level Vulkan function named: "</span></span><br><span class="line">\</span><br><span class="line"><span class="meta">#name &lt;&lt; std::endl; \</span></span><br><span class="line"><span class="keyword">return</span> <span class="literal">false</span>; \</span><br><span class="line">&#125; \</span><br><span class="line">&#125; \</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="释放Vulkan-Loader-library"><a href="#释放Vulkan-Loader-library" class="headerlink" title="释放Vulkan Loader library"></a>释放Vulkan Loader library</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">if</span> defined _WIN32</span></span><br><span class="line">FreeLibrary( vulkan_library );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">elif</span> defined __linux</span></span><br><span class="line">dlclose( vulkan_library );</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">vulkan_library = <span class="literal">nullptr</span>;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/" rel="next" title="Descriptor Sets">
+                <i class="fa fa-chevron-left"></i> Descriptor Sets
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/" rel="prev" title="Render Passes and Framebuffers">
+                Render Passes and Framebuffers <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#关于dll"><span class="nav-number">1.</span> <span class="nav-text">关于dll</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#loadlibrary的方式"><span class="nav-number">1.2.</span> <span class="nav-text">loadlibrary的方式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#加载Vulkan-API函数"><span class="nav-number">1.3.</span> <span class="nav-text">加载Vulkan API函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#方式"><span class="nav-number">1.3.1.</span> <span class="nav-text">方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#方式-1"><span class="nav-number">1.4.</span> <span class="nav-text">方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#global-level"><span class="nav-number">1.4.1.</span> <span class="nav-text">global-level</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#instance-level"><span class="nav-number">1.4.2.</span> <span class="nav-text">instance-level</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#device-level"><span class="nav-number">1.4.3.</span> <span class="nav-text">device-level</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#释放Vulkan-Loader-library"><span class="nav-number">1.5.</span> <span class="nav-text">释放Vulkan Loader library</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

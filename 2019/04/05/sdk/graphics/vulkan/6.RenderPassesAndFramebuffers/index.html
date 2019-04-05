@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Render Passes and Framebuffers[TOC] 介绍内容   Specifying attachment descriptions Specifying subpass descriptions Specifying dependencies between subpasses Creating a render pass Creating a framebuffer P">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Render Passes and Framebuffers">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Render Passes and Framebuffers[TOC] 介绍内容   Specifying attachment descriptions Specifying subpass descriptions Specifying dependencies between subpasses Creating a render pass Creating a framebuffer P">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/media/renderpass1.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/media/framebuffer1.png">
+<meta property="og:updated_time" content="2019-04-05T13:19:56.571Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Render Passes and Framebuffers">
+<meta name="twitter:description" content="Render Passes and Framebuffers[TOC] 介绍内容   Specifying attachment descriptions Specifying subpass descriptions Specifying dependencies between subpasses Creating a render pass Creating a framebuffer P">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/media/renderpass1.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Render Passes and Framebuffers | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Render Passes and Framebuffers
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:19:56" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Render-Passes-and-Framebuffers"><a href="#Render-Passes-and-Framebuffers" class="headerlink" title="Render Passes and Framebuffers"></a>Render Passes and Framebuffers</h1><p>[TOC]</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><p>内容</p>
+<blockquote>
+<ul>
+<li>Specifying attachment descriptions</li>
+<li>Specifying subpass descriptions</li>
+<li>Specifying dependencies between subpasses</li>
+<li>Creating a render pass</li>
+<li>Creating a framebuffer</li>
+<li>Preparing a render pass for geometry rendering and postprocess subpasses</li>
+<li>Preparing a render pass and a framebuffer with color and depth attachments</li>
+<li>Beginning a render pass</li>
+<li>Progressing to the next subpass</li>
+<li>Ending a render pass</li>
+<li>Destroying a framebuffer</li>
+<li>Destroying a render pass</li>
+</ul>
+</blockquote>
+<p>dc在render passes中组织.一个render pass是subpasses的集合.subpass描述images 资源(color,depth/stencil,input attachment)如何被使用:layouts是什么,在subpasses间layouts如何变换,何时向attachments渲染或合适从里面读数据,renderpass介绍后它们的内容是否有用,或它们的suage是否只被限制在一个render pass里.</p>
+<p>存储在渲染过程中的上述数据只是一个general description或metadata.在rendering process中真实的resources为framebuffers.通过他们,定义了rendering atatchments的image views.</p>
+<p>我们需要提前准备这些信息,在我们能issue(record)rendering commands前.有了这些信息,驱动能高效控制drawing process,限制rendering的memory 数量,或者给某些attachments使用非常快的cache,提高更多性能.</p>
+<p>接下来讨论如何组织renderpasses和subpasses的drawing操作.以及如何准备RT,创建framebuffers–用作attachments的image views.</p>
+<h2 id="descriptor"><a href="#descriptor" class="headerlink" title="descriptor"></a>descriptor</h2><h3 id="specifying-attachments-descriptions"><a href="#specifying-attachments-descriptions" class="headerlink" title="specifying attachments descriptions"></a>specifying attachments descriptions</h3><p>一个render pass是一组资源的集合(images)叫做attachments,用于rendering操作.分为color,depth/stencil,input,或者attachments.在创建render pass前,需要描述所有的attachmetns.<br>创建一组attachment descriptions.这个数组的indices之后也用于subpass descriptions.类似,创建一个framebuffer和指明每个attachment使用哪个image resources,定义了一个列表其每个元素对应于attachment descriptions数组.</p>
+<p>通常绘制一个几何体,至少需要一个color attachment.可能还需要depth attachment(如果开启depth test).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentDescription&gt; attachments_descriptions = </span><br><span class="line">&#123;</span><br><span class="line">	&#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_R8G8B8A8_UNORM,</span><br><span class="line">        VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_STORE,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">        VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_D16_UNORM,</span><br><span class="line">        VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_STORE,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">        VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">        VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在之前的例子,指明了两个attachments:一个R8G8B8A8_UNORM和一个D16_UNORM格式的.二者在render pass开始都需要clear.(类似glClear).当render pass完成时,我们想保持第一个attachment的内容,单不想第二个attachment的内容.二者都指明一个UNDEFINED intial layout–总能用于一个initial/old layout–意味着当memory barrier set up 时我们不需要images内容.</p>
+<p>final layout的内容依赖于在render pass后我们如何使用image.如果我们直接向一个swapchain image渲染且想显示到屏幕上,我们需要PRESENT_SRC layout.对于depth attachment,如果render pass之后不想用depth component(通常为true),需要需要再render pass的最后的subpass set the same layout value as specified.</p>
+<p>也有可能一个render pass不用任何attachments.此时不需要指明attachment descriptions但这种情况很少.</p>
+<h2 id="pass"><a href="#pass" class="headerlink" title="pass"></a>pass</h2><h3 id="Specifying-subpass-descriptions"><a href="#Specifying-subpass-descriptions" class="headerlink" title="Specifying subpass descriptions"></a>Specifying subpass descriptions</h3><p>再render pass中的操作被组织再subpasses中.每个subpass表示rendering commands(a subset of render pass’s attachments are  used)的一个stage或一个phase.</p>
+<p>一个render pass总需要至少一个subpass—当开始一个render pass时自动允许的.对于每个subpass,需要准备一个description.</p>
+<p>为了减少参数,定义一个自定义结构体.它是vulkan头文件中定义的vksubpassDescription结构的简化版本.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">SubpassParameters</span> &#123;</span></span><br><span class="line">    VkPipelineBindPoint PipelineType;<span class="comment">//定义了pipeline type(graphic,compute.)</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentReference&gt; InputAttachments;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentReference&gt; ColorAttachments;</span><br><span class="line">    <span class="comment">//指明哪些color attachments需要在subpass结束时resolved(从多采样图像更改为非多采样/单采样图像)</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentReference&gt; ResolveAttachments;</span><br><span class="line">    <span class="comment">//如果用了,指明哪个attachment用于depth and/or stencil attachment.</span></span><br><span class="line">    VkAttachmentReference <span class="keyword">const</span> * DepthStencilAttachment;</span><br><span class="line">    <span class="comment">//一组不用于subpass但其内容在整个subpass中需要preserved</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">uint32_t</span>&gt; PreserveAttachments;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>再总结一下.</p>
+<p>vulkan的render pass至少要有一个subpass,subpass参数定义在一组VkSubpassDescription中,每个这样的元素描述了attachments在关联的subpass中如何使用的.他们是分开的input,color,resolve,preserved attachments和单个entry for depth/stencil attachments的列表.所有成员都可能为空,在这种情况下,子类中不使用相应类型的attachment.</p>
+<p>刚刚描述的列表中的每个条目都是再attachment descriptions中为render pass指明的attachments的列表的引用.此外,每个条目都指定了一个布局,其中图像应该在子类期间出现.驱动程序自动执行到指定布局的转换.</p>
+<p>下面是使用子类参数类型的自定义结构指定子类定义的代码示例</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">subpass_descriptions.clear();</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; subpass_description : subpass_parameters ) &#123;</span><br><span class="line">    subpass_descriptions.push_back( &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        subpass_description.PipelineType,</span><br><span class="line">        <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(subpass_description.InputAttachments.size()),</span><br><span class="line">        subpass_description.InputAttachments.data(),</span><br><span class="line">        <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(subpass_description.ColorAttachments.size()),</span><br><span class="line">        subpass_description.ColorAttachments.data(),</span><br><span class="line">        subpass_description.ResolveAttachments.data(),</span><br><span class="line">        subpass_description.DepthStencilAttachment,</span><br><span class="line">        <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(subpass_description.PreserveAttachments.size()),</span><br><span class="line">        subpass_description.PreserveAttachments.data()</span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>下面是一个使用一个color attachment:a depth/stencil attachment的一个subpass的例子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">VkAttachmentReference depth_stencil_attachment = &#123;</span><br><span class="line">    <span class="number">1</span>,<span class="comment">//index</span></span><br><span class="line">    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;SubpassParameters&gt; subpass_parameters = &#123;</span><br><span class="line">	&#123;</span><br><span class="line">        VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">        &#123;&#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="number">0</span>,<span class="comment">//index</span></span><br><span class="line">                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;&#125;,</span><br><span class="line">        &amp;depth_stencil_attachment,</span><br><span class="line">        &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h3 id="specifying-dependencies-between-subpasses"><a href="#specifying-dependencies-between-subpasses" class="headerlink" title="specifying dependencies between subpasses"></a>specifying dependencies between subpasses</h3><p>当subpass有依赖关系时需要指明subpass dependencies.</p>
+<p>定义subpass dependencies与memory barrier相似.</p>
+<p>指明subpass之间(或subpass和render pass之后/之前的commands之间)与设置image memory barrier相似.当位于某个subpass的commands以来另一个subpass时需要这样做.不需要设置layout transitions的dependencies.它们时根据render pass attachment和subpass descriptions自动进行的,但如果两个subpass中attachment都是只读的,就不需要指明dependency了.</p>
+<p>在render pass建立image memory barriers也需要subpass dependencies.但不能”self-dependency”(source和dest的index相同).但如果给已有subpass定义了一个这样的dependency,我们能record一个memory barrier.其他情况,source subpass index必须比target subpass index小(除了VK_SUBPASS_EXTERNAL)</p>
+<p>下例,准备了两个subpass之间的dependency–第一个绘制geometry到color和depth attachments,第二个使用color data做后处理.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkSubpassDependency&gt; subpass_dependencies = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,<span class="comment">//第一个subpass</span></span><br><span class="line">        <span class="number">1</span>,<span class="comment">//第二个subpass</span></span><br><span class="line">        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,<span class="comment">//stage for 0</span></span><br><span class="line">        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,</span><br><span class="line">        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,<span class="comment">//access mask for 0</span></span><br><span class="line">        VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,<span class="comment">//access mask for 1</span></span><br><span class="line">        VK_DEPENDENCY_BY_REGION_BIT;<span class="comment">//第一个subpass在一个坐标写一个值,第二个subpass在相同坐标读取到相同的值</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>VK_DEPENDENCY_BY_REGION_BIT我们这样做时,我们不应该假设区域大于单个像素,因为在不同的硬件平台上,区域的大小可能不同.</p>
+<h3 id="creating-a-render-pass"><a href="#creating-a-render-pass" class="headerlink" title="creating a render pass"></a>creating a render pass</h3><p>后处理等操作需要在subpasses里对这些操作排序.指明所有需要的attachments的descriptions,所有组织操作的 subpasses,还有这些操作间必要的dependencies.这些数据准备好后,能创建render pass了.</p>
+<p>vkCreateRenderPass</p>
+<p><img src="media/renderpass1.png" alt></p>
+<p>render pass创建最重要的部分是准备数据.descriptions.所有用到的attachments和subpasses和subpasses间的dependencies的descriptions.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SpecifyAttachmentsDescriptions( attachments_descriptions );</span><br><span class="line">std::vector&lt;VkSubpassDescription&gt; subpass_descriptions;</span><br><span class="line">SpecifySubpassDescriptions( subpass_parameters, subpass_descriptions );</span><br><span class="line">SpecifyDependenciesBetweenSubpasses( subpass_dependencies );</span><br></pre></td></tr></table></figure>
+<p>在创建render pass时作为参数使用</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">VkRenderPassCreateInfo render_pass_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(attachments_descriptions.size()),</span><br><span class="line">    attachments_descriptions.data(),</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(subpass_descriptions.size()),</span><br><span class="line">    subpass_descriptions.data(),</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(subpass_dependencies.size()),</span><br><span class="line">    subpass_dependencies.data()</span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreateRenderPass( logical_device,</span><br><span class="line">&amp;render_pass_create_info, <span class="literal">nullptr</span>, &amp;render_pass );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a render pass."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>为了让render pass正常工作,有关用于所有已定义attachments的特定资源的此类信息存储在framebuffers中。</p>
+<h3 id="creating-a-framebuffer"><a href="#creating-a-framebuffer" class="headerlink" title="creating a framebuffer"></a>creating a framebuffer</h3><p>framebuffers和render passes一起使用.它们指明了render pass里与之关联的attachments使用什么image resources.也定义了可渲染区域的尺寸.</p>
+<p>framebuffer总是和render passes一起创建,它们定义了用于渲染过程中指定的attachments的特定image subresources，因此这两种对象类型应相互对应.</p>
+<p><img src="media/framebuffer1.png" alt></p>
+<p>当创建frame buffer,提供一个render pass object能使用这个fb.但也不限于用这个特定的render pass使用它.所有可以兼容的render passes都可以用它.</p>
+<p>什么是兼容的(compatible)render passes?第一,相同数量的subpasses.每个subpass有compatible的input,color,resolve,depth/stencil attachments.但是,需要记住确保特定区域外的pixels/fragments是未定义的.为此需要在创建pipeline时或者设置对应动态状态时指明一些参数(viewport和scissor test)(相关间:preparing view port and scissor test state c8,graphics and compute piplines ,setting a dynamic viewport and scissors state c9,command recording and drawing).</p>
+<p>当开始render pass,使用framebuffer时,需要确保images在framebuffer中指明的subresources不用于其他目的.换句话说,如果使用了image作为framebuffer attachment,就不能降至用于其他render pass.</p>
+<p>创建framebuffer</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">VkFramebufferCreateInfo framebuffer_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    render_pass,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(attachments.size()),</span><br><span class="line">    attachments.data(),</span><br><span class="line">    width,</span><br><span class="line">    height,</span><br><span class="line">    layers</span><br><span class="line">&#125;;</span><br><span class="line">VkResult result = vkCreateFramebuffer( logical_device,</span><br><span class="line">    &amp;framebuffer_create_info, <span class="literal">nullptr</span>, &amp;framebuffer );</span><br><span class="line">    <span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a framebuffer."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="preparing-a-render-pass-for-geometry-rendering-and-postprocess-subpasses"><a href="#preparing-a-render-pass-for-geometry-rendering-and-postprocess-subpasses" class="headerlink" title="preparing a render pass for geometry rendering and postprocess subpasses"></a>preparing a render pass for geometry rendering and postprocess subpasses</h3><p>介绍两个subpasses的例子.第一个是有两个attachments–color和depth.第二个从第一个color attachment读取数据并render到另一个color attachment(swapchain image,能显示到屏幕上).</p>
+<p>3个attachments</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentDescription&gt; attachments_descriptions = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_FORMAT_R8G8B8A8_UNORM,</span><br><span class="line">    VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_FORMAT_D16_UNORM,</span><br><span class="line">    VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_FORMAT_R8G8B8A8_UNORM,</span><br><span class="line">    VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_STORE,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">    VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">    &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>第一个是第一个subpass的color attachment和第二个subpass读取数据的.第二个attachment是depth数据;第三个是第二个subpass的color attachment.在render pass之后不需要第一个和第二个attachments了,需要给它们的store operations指明VK_ATTACHMENT_STORE_OP_DONT_CARE.render pass一开始也不需要它们的内容,所以知名一个未定义的layout.也clear三个attachments.</p>
+<p>定义2个subpasses:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">VkAttachmentReference depth_stencil_attachment = &#123;</span><br><span class="line"><span class="number">1</span>,</span><br><span class="line">VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;SubpassParameters&gt; subpass_parameters = &#123;</span><br><span class="line">    <span class="comment">// #0 subpass</span></span><br><span class="line">    &#123;</span><br><span class="line">        VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">        &#123;&#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">            <span class="number">0</span>,</span><br><span class="line">            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;&#125;,</span><br><span class="line">        &amp;depth_stencil_attachment,</span><br><span class="line">        &#123;&#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="comment">// #1 subpass</span></span><br><span class="line">        &#123;</span><br><span class="line">        VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">            <span class="number">0</span>,</span><br><span class="line">            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">            <span class="number">2</span>,</span><br><span class="line">            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;&#125;,</span><br><span class="line">        <span class="literal">nullptr</span>,</span><br><span class="line">        &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最后定义两个subpasses关于第一个attachment的dependency,一个时color attachment,另一个是input attachment.然后创建render pass</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkSubpassDependency&gt; subpass_dependencies = &#123;</span><br><span class="line">	&#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,</span><br><span class="line">        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,</span><br><span class="line">        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,</span><br><span class="line">        VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,</span><br><span class="line">        VK_DEPENDENCY_BY_REGION_BIT</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">if</span>( !CreateRenderPass( logical_device, attachments_descriptions,</span><br><span class="line">    subpass_parameters, subpass_dependencies, render_pass ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="reparing-a-rener-pass-and-a-framebuffer-with-color-and-depth-attachments"><a href="#reparing-a-rener-pass-and-a-framebuffer-with-color-and-depth-attachments" class="headerlink" title="reparing a rener pass and a framebuffer with color and depth attachments"></a>reparing a rener pass and a framebuffer with color and depth attachments</h3><p>3D场景渲染除了需要color attachment还需要给depth testing准备depth attachment.</p>
+<p>本节介绍给color和depth数据创建images,创建只有单个subpass(向color和dpeth attachments渲染)的render pass.创建在render pass attachments中使用这两个images的framebuffer.</p>
+<p>1.想在render pass里作为RT，usages为COLOR_ATTACHMENT / DEPTH_STENCIL_ATTACHMENT</p>
+<p>2.向在render pass之后作为sample 用的textures,usage:SAMPLED</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !Create2DImageAndView( physical_device, logical_device,</span><br><span class="line">VK_FORMAT_R8G8B8A8_UNORM, &#123; width, height &#125;, <span class="number">1</span>, <span class="number">1</span>, VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,</span><br><span class="line">VK_IMAGE_ASPECT_COLOR_BIT, color_image, color_image_memory_object,</span><br><span class="line">color_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !Create2DImageAndView( physical_device, logical_device,</span><br><span class="line">VK_FORMAT_D16_UNORM, <span class="comment">//format</span></span><br><span class="line">&#123; width, height &#125;, <span class="number">1</span>, <span class="number">1</span>, VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,<span class="comment">//usage</span></span><br><span class="line">VK_IMAGE_ASPECT_DEPTH_BIT, depth_image, depth_image_memory_object,</span><br><span class="line">depth_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后将2个attachment指给render pass,他们在render pass开始都clear,render pass之后内容都保持</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkAttachmentDescription&gt; attachments_descriptions = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_FORMAT_R8G8B8A8_UNORM,</span><br><span class="line">    VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_STORE,</span><br><span class="line">    VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">    VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">    VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_FORMAT_D16_UNORM,</span><br><span class="line">        VK_SAMPLE_COUNT_1_BIT,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_CLEAR,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_STORE,</span><br><span class="line">        VK_ATTACHMENT_LOAD_OP_DONT_CARE,</span><br><span class="line">        VK_ATTACHMENT_STORE_OP_DONT_CARE,</span><br><span class="line">        VK_IMAGE_LAYOUT_UNDEFINED,</span><br><span class="line">        VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>下一步是定义一个subpass,将第一个attachment作为color,第二个作为depth/stencil</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">VkAttachmentReference depth_stencil_attachment = &#123;</span><br><span class="line">    <span class="number">1</span>,</span><br><span class="line">    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;SubpassParameters&gt; subpass_parameters = &#123;</span><br><span class="line">&#123;</span><br><span class="line">    VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">    &#123;&#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="number">0</span>,</span><br><span class="line">            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;&#125;,</span><br><span class="line">    &amp;depth_stencil_attachment,</span><br><span class="line">    &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>最后定义subpass和render pass后执行的commands的dependency.</p>
+<p>这有必要,因为不想在render pass里正在写数据时其他commands就开始才能够images里读取数据.也创建renderpass和framebufer</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkSubpassDependency&gt; subpass_dependencies = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_SUBPASS_EXTERNAL,</span><br><span class="line">        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,</span><br><span class="line">        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,</span><br><span class="line">        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,</span><br><span class="line">        VK_ACCESS_SHADER_READ_BIT,</span><br><span class="line">        <span class="number">0</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">if</span>( !CreateRenderPass( logical_device, attachments_descriptions,</span><br><span class="line">subpasses_parameters, subpasses_dependencies, render_pass ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateFramebuffer( logical_device, render_pass, </span><br><span class="line">&#123; color_image_view,depth_image_view &#125;,</span><br><span class="line">width, height, <span class="number">1</span>, framebuffer ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="beginning-a-render-pass"><a href="#beginning-a-render-pass" class="headerlink" title="beginning a render pass"></a>beginning a render pass</h3><p>创建好render pass和frame buffer且准备开始recording commands绘制geometry,需要一个开始render pass的record操作.这个操作同时也自动开始它的第一个subbpass.在这完成前VkRenderPassBeginInfo:准备就绪</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VkRenderPassBeginInfo render_pass_begin_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    render_pass,</span><br><span class="line">    framebuffer,</span><br><span class="line">    render_area,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(clear_values.size()),</span><br><span class="line">    clear_values.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>clearing values的数组至少要和attachments对应的元素个数一样.只需要给需要clear的提供值.可以提供nullptr.</p>
+<p>当开始render pass,需要提供render area的dimentsions.可以和frame buffer的dimension一样也可以更小.我们要确保渲染将局限于指定的区域,否则超出此范围的像素可能会变得未定义.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vkCmdBeginRenderPass( command_buffer, &amp;render_pass_begin_info,</span><br><span class="line">subpass_contents );</span><br></pre></td></tr></table></figure>
+<h3 id="progressing-to-the-next-subpass"><a href="#progressing-to-the-next-subpass" class="headerlink" title="progressing to the next subpass"></a>progressing to the next subpass</h3><p>一个render pass里record的commands分散在subpasses里.当给定subpass里的commands集已经recorded且想给另一个subpass record commands,需要switch(or progress)到下一个subpass.</p>
+<p>同一个render pass.</p>
+<p>在此操作过程中,将执行适当的layout transitions,并引入memory和执行依赖(与meemory arriers里类似).都是驱动自动进行的,因此如果需要,新的subpass能按照创建render pass指明的方式使用attachemnts.移到下一个subpass也performs multisample resolve operations  on specified color attachments.</p>
+<p>subpass里的commands可以直接在command buffer里record,也可以在第二个command bufer里间接执行.(Commands in the subpass can be recorded directly, by inlining them in the command buffer, or indirectly by executing a secondary command buffer.)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdNextSubpass( command_buffer, subpass_contents );</span><br></pre></td></tr></table></figure>
+<h3 id="ending-a-render-pass"><a href="#ending-a-render-pass" class="headerlink" title="ending a render pass"></a>ending a render pass</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdEndRenderPass( command_buffer );</span><br></pre></td></tr></table></figure>
+<p>在一个command bufffer里record这个函数会执行多个操作.引入执行和内存依赖性（如内存屏障中的那些）,并执行图像布局转换——将图像从为最后一个子类指定的布局转换为最终布局的值（请参阅指定附件描述方法）.Also multisample resolving is performed on color attachments for which resolving was specified in the last subpass. dditionally, for attachments whose contents should be preserved after the render pass,  attachment data may be transferred from the cache to the image’s memory.</p>
+<h2 id="destroy"><a href="#destroy" class="headerlink" title="destroy"></a>destroy</h2><h3 id="destroy-a-framebuffer"><a href="#destroy-a-framebuffer" class="headerlink" title="destroy a framebuffer"></a>destroy a framebuffer</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != framebuffer ) &#123;</span><br><span class="line">	vkDestroyFramebuffer( logical_device, framebuffer, <span class="literal">nullptr</span> );</span><br><span class="line">	framebuffer = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在销毁它前需要确保commands不会继续执行</p>
+<h3 id="destroying-a-render-pass"><a href="#destroying-a-render-pass" class="headerlink" title="destroying a render pass"></a>destroying a render pass</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != render_pass ) &#123;</span><br><span class="line">	vkDestroyRenderPass( logical_device, render_pass, <span class="literal">nullptr</span> );</span><br><span class="line">	render_pass = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/基础知识/" rel="next" title="基础知识">
+                <i class="fa fa-chevron-left"></i> 基础知识
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/" rel="prev" title="Command Recording and Drawing">
+                Command Recording and Drawing <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Render-Passes-and-Framebuffers"><span class="nav-number">1.</span> <span class="nav-text">Render Passes and Framebuffers</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#descriptor"><span class="nav-number">1.2.</span> <span class="nav-text">descriptor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#specifying-attachments-descriptions"><span class="nav-number">1.2.1.</span> <span class="nav-text">specifying attachments descriptions</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#pass"><span class="nav-number">1.3.</span> <span class="nav-text">pass</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Specifying-subpass-descriptions"><span class="nav-number">1.3.1.</span> <span class="nav-text">Specifying subpass descriptions</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#specifying-dependencies-between-subpasses"><span class="nav-number">1.3.2.</span> <span class="nav-text">specifying dependencies between subpasses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#creating-a-render-pass"><span class="nav-number">1.3.3.</span> <span class="nav-text">creating a render pass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#creating-a-framebuffer"><span class="nav-number">1.3.4.</span> <span class="nav-text">creating a framebuffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#preparing-a-render-pass-for-geometry-rendering-and-postprocess-subpasses"><span class="nav-number">1.3.5.</span> <span class="nav-text">preparing a render pass for geometry rendering and postprocess subpasses</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reparing-a-rener-pass-and-a-framebuffer-with-color-and-depth-attachments"><span class="nav-number">1.3.6.</span> <span class="nav-text">reparing a rener pass and a framebuffer with color and depth attachments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#beginning-a-render-pass"><span class="nav-number">1.3.7.</span> <span class="nav-text">beginning a render pass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#progressing-to-the-next-subpass"><span class="nav-number">1.3.8.</span> <span class="nav-text">progressing to the next subpass</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ending-a-render-pass"><span class="nav-number">1.3.9.</span> <span class="nav-text">ending a render pass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#destroy"><span class="nav-number">1.4.</span> <span class="nav-text">destroy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#destroy-a-framebuffer"><span class="nav-number">1.4.1.</span> <span class="nav-text">destroy a framebuffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#destroying-a-render-pass"><span class="nav-number">1.4.2.</span> <span class="nav-text">destroying a render pass</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

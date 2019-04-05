@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="9.Command Recording and Drawing[TOC] 介绍内容  Clearing a color image Clearing a depth-stencil image Clearing render pass attachments Binding vertex buffers Binding an index buffer Providing data to shad">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Command Recording and Drawing">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="9.Command Recording and Drawing[TOC] 介绍内容  Clearing a color image Clearing a depth-stencil image Clearing render pass attachments Binding vertex buffers Binding an index buffer Providing data to shad">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/indexbuffer.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/vkCmdDrawInstance.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/multithreadcbs.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/renderingframesofanimation.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/renderframeofanimationsets.png">
+<meta property="og:updated_time" content="2019-04-05T13:20:22.110Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Command Recording and Drawing">
+<meta name="twitter:description" content="9.Command Recording and Drawing[TOC] 介绍内容  Clearing a color image Clearing a depth-stencil image Clearing render pass attachments Binding vertex buffers Binding an index buffer Providing data to shad">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/media/indexbuffer.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Command Recording and Drawing | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/9.CommandRecordingandDrawing/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Command Recording and Drawing
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:20:22" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="9-Command-Recording-and-Drawing"><a href="#9-Command-Recording-and-Drawing" class="headerlink" title="9.Command Recording and Drawing"></a>9.Command Recording and Drawing</h1><p>[TOC]</p>
+<h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><h3 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h3><blockquote>
+<ul>
+<li>Clearing a color image</li>
+<li>Clearing a depth-stencil image</li>
+<li>Clearing render pass attachments</li>
+<li>Binding vertex buffers</li>
+<li>Binding an index buffer</li>
+<li>Providing data to shaders through push constants</li>
+<li>Setting viewport state dynamically</li>
+<li>Setting scissor state dynamically</li>
+<li>Setting line width state dynamically</li>
+<li>Setting depth bias state dynamically</li>
+<li>Setting blend constants state dynamically</li>
+<li>Drawing a geometry</li>
+<li>Drawing an indexed geometry</li>
+<li>Dispatching compute work</li>
+<li>Executing a secondary command buffer inside a primary command buffer</li>
+<li>Recording a command buffer that draws a geometry with a dynamic viewport<br>and scissor states</li>
+<li>Recording command buffers on multiple threads</li>
+<li>Preparing a single frame of animation</li>
+<li>Increasing performance through increasing the number of separately rendered<br>frames</li>
+</ul>
+</blockquote>
+<h2 id="简述"><a href="#简述" class="headerlink" title="简述"></a>简述</h2><p>Vulkan设计为图形和计算API.它的主要目的是允许我们用多个厂商生产的grahpics 硬件生成dynamic images.</p>
+<p>已经了解了如何创建和管理资源以及在shaders中使用.了解了不同的shader stages和pipeline objects控制rendering state或分发computational work.最后一件事是需要知道如何绘制images的知识.</p>
+<p>本文讨论commands.受线学习drawing commands和在我们的source code里管理它们以达到最高性能.最后vulkan API里最强力的能力–在多线程进行record command buffers.</p>
+<h2 id="准备"><a href="#准备" class="headerlink" title="准备"></a>准备</h2><h3 id="Clearing-a-color-image"><a href="#Clearing-a-color-image" class="headerlink" title="Clearing a color image"></a>Clearing a color image</h3><p>vulkan里,给render pass的attachment description设置loadOp为VK_ATTACHMENT_LOAD_OP_CLEAR以clear.</p>
+<p>有时,我们不想这么做,需要隐式实现</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vkCmdClearColorImage( command_buffer, image, image_layout, &amp;clear_color,</span><br><span class="line">                     <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(image_subresource_ranges.size()),</span><br><span class="line">                     image_subresource_ranges.data() );</span><br></pre></td></tr></table></figure>
+<p>提供image的handle,layout,sub-resources的数组(mipmap level and/or array layers).</p>
+<p>只能清理color image.以及transfer dst usage images.</p>
+<h3 id="Clearing-a-depth-stencil-image"><a href="#Clearing-a-depth-stencil-image" class="headerlink" title="Clearing a depth-stencil image"></a>Clearing a depth-stencil image</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vkCmdClearDepthStencilImage( command_buffer, image, image_layout,</span><br><span class="line">                            &amp;clear_value, <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(image_subresource_ranges.size()),</span><br><span class="line">                            image_subresource_ranges.data() );</span><br></pre></td></tr></table></figure>
+<p>VkClearDepthStencilValue</p>
+<blockquote>
+<ul>
+<li>depth when a depth aspect should be cleared</li>
+<li>stencil for a value used to clear the stencil aspect</li>
+</ul>
+</blockquote>
+<h3 id="Clearing-render-pass-attachments"><a href="#Clearing-render-pass-attachments" class="headerlink" title="Clearing render pass attachments"></a>Clearing render pass attachments</h3><p>vkCmdClearAttachments</p>
+<p>有时清理attachements of sub-passes.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vkCmdClearAttachments( command_buffer,</span><br><span class="line">                      <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(attachments.size()), attachments.data(),</span><br><span class="line">                      <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(rects.size()), rects.data() );</span><br></pre></td></tr></table></figure>
+<p>VkClearAttachment</p>
+<blockquote>
+<ul>
+<li>aspectMask attachment的aspect(color,depth,stencil)</li>
+<li>aspectMask 置为VK_IMAGE_ASPECT_COLOR_BIT,指明colorAttachment为当前sub-pass里的color attachemnt,否则忽略</li>
+<li>clearValue</li>
+</ul>
+</blockquote>
+<p>VkClearRect</p>
+<blockquote>
+<ul>
+<li>top-left,width,height</li>
+</ul>
+</blockquote>
+<h3 id="Binding-vertex-buffers"><a href="#Binding-vertex-buffers" class="headerlink" title="Binding vertex buffers"></a>Binding vertex buffers</h3><p>当进行几何绘制需要指明vertiices数据.至少需要vertex positions(其实也不是必须的,可以shader里生成…).其他数据还有normal,tangent/bitangent,colors,teexture coordinates.这些数据来源于usage为vertex buffer的buffers.需要在dc前绑定这些buffers.</p>
+<p>VertexBufferParameters</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">VertexBufferParameters</span> &#123;</span></span><br><span class="line">    VkBuffer Buffer;</span><br><span class="line">    VkDeviceSize MemoryOffset;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VertexBufferParameters&gt; named buffers_parameters.</span><br><span class="line">    ..</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkBuffer&gt; buffers;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDeviceSize&gt; offsets;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; buffer_parameters : buffers_parameters ) &#123;</span><br><span class="line">    buffers.push_back( buffer_parameters.Buffer );</span><br><span class="line">    offsets.push_back( buffer_parameters.MemoryOffset );</span><br><span class="line">&#125;</span><br><span class="line">vkCmdBindVertexBuffers( command_buffer, first_binding,</span><br><span class="line">                       <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(buffers_parameters.size()), buffers.data(),</span><br><span class="line">                       offsets.data() );</span><br></pre></td></tr></table></figure>
+<h3 id="Binding-an-index-buffer"><a href="#Binding-an-index-buffer" class="headerlink" title="Binding an index buffer"></a>Binding an index buffer</h3><p>index buffer的usage为index buffer，type为，比如VK_INDEX_TYPE_UINT16，VK_INDEX_TYPE_UINT32</p>
+<p><img src="media/indexbuffer.png" alt></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdBindIndexBuffer( command_buffer, buffer, memory_offset, index_type );</span><br></pre></td></tr></table></figure>
+<h3 id="Providing-data-to-shaders-through-push-constants"><a href="#Providing-data-to-shaders-through-push-constants" class="headerlink" title="Providing data to shaders through push constants"></a>Providing data to shaders through push constants</h3><p>大多数时间使用descriptor set通过buffers或images提供大量数据.为了快速方便提供数据给shader,可以使用push constants.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vkCmdPushConstants( command_buffer, </span><br><span class="line">                   pipeline_layout,</span><br><span class="line">                   pipeline_stages, </span><br><span class="line">                   offset,<span class="comment">//4的倍数 </span></span><br><span class="line">                   size, <span class="comment">//4的倍数</span></span><br><span class="line">                   data <span class="comment">//void*</span></span><br><span class="line">                   )</span><br></pre></td></tr></table></figure>
+<p>硬件最少支持128bytes.</p>
+<p>一个例子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">array</span>&lt;<span class="keyword">float</span>, 4&gt; color = &#123; <span class="number">0.0f</span>, <span class="number">0.7f</span>, <span class="number">0.4f</span>, <span class="number">0.1f</span> &#125;;</span><br><span class="line">ProvideDataToShadersThroughPushConstants( CommandBuffer, *PipelineLayout,</span><br><span class="line">                                         VK_SHADER_STAGE_FRAGMENT_BIT, <span class="number">0</span>, <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(<span class="keyword">sizeof</span>( color[<span class="number">0</span>] ) *</span><br><span class="line">color.size()), &amp;color[<span class="number">0</span>] );</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">ProvideDataToShadersThroughPushConstants(...)</span><br><span class="line">&#123;</span><br><span class="line">	vkCmdPushConstants( command_buffer, pipeline_layout, pipeline_stages,</span><br><span class="line">offset, size, data );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="settings"><a href="#settings" class="headerlink" title="settings"></a>settings</h2><h3 id="Setting-viewport-state-dynamically"><a href="#Setting-viewport-state-dynamically" class="headerlink" title="Setting viewport state dynamically"></a>Setting viewport state dynamically</h3><p>VkViewport</p>
+<blockquote>
+<ul>
+<li>left :up left for x</li>
+<li>top: up left for y</li>
+<li>width </li>
+<li>height</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; vkCmdSetViewport( command_buffer, first_viewport,</span><br><span class="line">&gt;                  <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(viewports.size()), viewports.data() );</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<p>stages dynamic指明是动态的,但数量是创建时就固定了的</p>
+<h3 id="Setting-scissor-state-dynamically"><a href="#Setting-scissor-state-dynamically" class="headerlink" title="Setting scissor state dynamically"></a>Setting scissor state dynamically</h3><p>scissor额外再viewport dimentsion内添加了一个渲染rectangle区域.总开启.可以静态设置,也可以cb动态设置</p>
+<p>VkRect2D</p>
+<blockquote>
+<ul>
+<li>x:horizontal offset (in pixels) from up left corner of viewport for x number of offset</li>
+<li>y:upper left corner</li>
+<li>width</li>
+<li>height</li>
+</ul>
+<p>vkCmdSetScissor</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt; vkCmdSetScissor( command_buffer, first_scissor,</span><br><span class="line">&gt;                 <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(scissors.size()), scissors.data() );</span><br><span class="line">&gt;</span><br></pre></td></tr></table></figure>
+</blockquote>
+<blockquote>
+</blockquote>
+<h3 id="Setting-line-width-states-dynamically"><a href="#Setting-line-width-states-dynamically" class="headerlink" title="Setting line width states dynamically"></a>Setting line width states dynamically</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdSetLineWidth( command_buffer, line_width )</span><br></pre></td></tr></table></figure>
+<h3 id="Setting-depth-bias-state-dynamically"><a href="#Setting-depth-bias-state-dynamically" class="headerlink" title="Setting depth bias state dynamically"></a>Setting depth bias state dynamically</h3><p>depth bias可以修正fragment的depth value计算.</p>
+<p>depth bias可以对fragment的depth进行offset.通常绘制非常近的objects用到.比如墙上的pictures or posters.这类objects绘制会有z-fighting.</p>
+<p>depth bias修正value计算–存储在depth attachment里的depth value.但不会影响渲染的image.也就是不会影响距离感.修正是基于constant factor和fragment的slope.也指明depth bias(clamp)能加的最大或最小值.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdSetDepthBias( command_buffer, constant_factor, clamp, slope_factor );</span><br></pre></td></tr></table></figure>
+<h3 id="Setting-blend-constants-states-dynamically"><a href="#Setting-blend-constants-states-dynamically" class="headerlink" title="Setting blend constants states dynamically"></a>Setting blend constants states dynamically</h3><p>blend用于透明物体模拟.通过控制混合英子和操作,得到最终结果.也可以使用constant color进行计算.constant color可以动态设置.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vkCmdSetBlendConstants( command_buffer, blend_constants.data() );</span><br></pre></td></tr></table></figure>
+<h2 id="drawing"><a href="#drawing" class="headerlink" title="drawing"></a>drawing</h2><h3 id="Drawing-a-geometry"><a href="#Drawing-a-geometry" class="headerlink" title="Drawing a geometry"></a>Drawing a geometry</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">vkCmdDraw( command_buffer, </span><br><span class="line">          vertex_count, </span><br><span class="line">          instance_count, </span><br><span class="line">          first_vertex,<span class="comment">//多models存储到一个vertex buffer里有用</span></span><br><span class="line">          first_instance</span><br><span class="line">          );</span><br></pre></td></tr></table></figure>
+<p>instance在不改变vertex进行通mesh绘制很有用(ref specifying pipeline vertex binding description,attribute description,and input state,chapter 8,graphics and compute piipeline).</p>
+<p><img src="media/vkCmdDrawInstance.png" alt></p>
+<p>vulkan里没有Default state.</p>
+<p>比如descriptor sets或dynamic pipeline states.每次record cb,所有需求的descriptor sets需要绑定给成本，类似作为dynamic的pipeline state必须用对于函数提供值,render pass必须在合适的command buffer里开始.</p>
+<p>drawing cam be performed only inside the render pass.</p>
+<h3 id="Drawing-an-indexed-geometry"><a href="#Drawing-an-indexed-geometry" class="headerlink" title="Drawing an indexed geometry"></a>Drawing an indexed geometry</h3><p>最常用的.</p>
+<p>vkCmdDrawIndexed()</p>
+<p>去重复顶点,需要额外的index buffer.但在vertex有很多额外数据时很有必要(normal,tangent,bitangent,two texture coordinates).</p>
+<p>$\color {red}{新的概念(reuse vertex)}$:Indexed drawing允许硬件重用vertex caching里已经计算的vertices.根据indices,如果已经计算过,reuse.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">vkCmdDrawIndexed( command_buffer, index_count, instance_count, first_index,</span><br><span class="line">                 vertex_offset, first_instance );</span><br></pre></td></tr></table></figure>
+<h3 id="Dispatching-compute-work"><a href="#Dispatching-compute-work" class="headerlink" title="Dispatching compute work"></a>Dispatching compute work</h3><p>compute pipeline</p>
+<p>resource通过且只能通过descriptor sets</p>
+<p>可用来进行image post-processing,color correction or blur.physical 计算.</p>
+<p>compute shaderdispatched in groups.</p>
+<p>vkCmdDispatch( command_buffer, x_size, y_size, z_size );</p>
+<p>workgroups</p>
+<p>maxComputeWorkGroupCount[3]</p>
+<p>硬件最少支持65,535</p>
+<p>不能再render passes里进行</p>
+<h3 id="Executing-a-secondary-command-buffer-inside-a-primary-command-buffer"><a href="#Executing-a-secondary-command-buffer-inside-a-primary-command-buffer" class="headerlink" title="Executing a secondary command buffer inside a primary command buffer"></a>Executing a secondary command buffer inside a primary command buffer</h3><p>vulkan里可以record2中command buffers-primary and secondary.primary command buffers能直接submit到queues.secondary command buffers只能在primary command buffer里执行.</p>
+<p>vkCmdExecuteCommands</p>
+<p>一般primary command buffers已经足够用来rendering或computing work.但是有时需要把工作分到两种command buffer 里.当想图形硬件执行secondary command buffers时我们能在primary command buffer里这样做:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vkCmdExecuteCommands( command_buffer,</span><br><span class="line">                     <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(secondary_command_buffers.size()),</span><br><span class="line">                     secondary_command_buffers.data() );</span><br></pre></td></tr></table></figure>
+<h3 id="example"><a href="#example" class="headerlink" title="example"></a>example</h3><h3 id="Recording-a-command-buffer-that-draws-a-geometry-with-a-dynamic-viewport-and-scissor-states"><a href="#Recording-a-command-buffer-that-draws-a-geometry-with-a-dynamic-viewport-and-scissor-states" class="headerlink" title="Recording a command buffer that draws a geometry with a dynamic viewport and scissor states"></a>Recording a command buffer that draws a geometry with a dynamic viewport and scissor states</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Mesh</span> &#123;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">float</span>&gt; Data;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">uint32_t</span>&gt; VertexOffset;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">uint32_t</span>&gt; VertexCount;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !BeginCommandBufferRecordingOperation( command_buffer,</span><br><span class="line">                                          VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, <span class="literal">nullptr</span> ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>image memory barrier</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( present_queue_family_index != graphics_queue_family_index ) &#123;</span><br><span class="line">    ImageTransition image_transition_before_drawing = &#123;</span><br><span class="line">        swapchain_image,</span><br><span class="line">        VK_ACCESS_MEMORY_READ_BIT,</span><br><span class="line">        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,</span><br><span class="line">        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">        present_queue_family_index,</span><br><span class="line">        graphics_queue_family_index,</span><br><span class="line">        VK_IMAGE_ASPECT_COLOR_BIT</span><br><span class="line">    &#125;;</span><br><span class="line">    SetImageMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,</span><br><span class="line">                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, &#123;</span><br><span class="line">                              image_transition_before_drawing &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>start render pass,bind pipeline object</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BeginRenderPass( command_buffer, render_pass, framebuffer, &#123; &#123; <span class="number">0</span>, <span class="number">0</span> &#125;,</span><br><span class="line">                                                            framebuffer_size &#125;, clear_values, VK_SUBPASS_CONTENTS_INLINE );</span><br><span class="line">BindPipelineObject( command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">                   graphics_pipeline );</span><br></pre></td></tr></table></figure>
+<p>设置dynamic states.viewport ,scissor..bind a buffer for vertex data</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">VkViewport viewport = &#123;</span><br><span class="line">    <span class="number">0.0f</span>,</span><br><span class="line">    <span class="number">0.0f</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(framebuffer_size.width),</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">float</span>&gt;(framebuffer_size.height),</span><br><span class="line">    <span class="number">0.0f</span>,</span><br><span class="line">    <span class="number">1.0f</span>,</span><br><span class="line">&#125;;</span><br><span class="line">SetViewportStateDynamically( command_buffer, <span class="number">0</span>, &#123; viewport &#125; );</span><br><span class="line">VkRect2D scissor = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span></span><br><span class="line">    &#125;,</span><br><span class="line">    &#123;</span><br><span class="line">        framebuffer_size.width,</span><br><span class="line">        framebuffer_size.height</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">SetScissorStateDynamically( command_buffer, <span class="number">0</span>, &#123; scissor &#125; );</span><br><span class="line">BindVertexBuffers( command_buffer, first_vertex_buffer_binding,</span><br><span class="line">                  vertex_buffers_parameters );</span><br></pre></td></tr></table></figure>
+<p>descriptor sets,shaders访问</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">BindDescriptorSets( command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,</span><br><span class="line">                   pipeline_layout, index_for_first_descriptor_set, descriptor_sets, &#123;&#125; );</span><br></pre></td></tr></table></figure>
+<p>现在可以绘制几何体了.当然还可以设置index buffer,提供push constants值.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; geometry.Parts.size(); ++i ) &#123;</span><br><span class="line">    DrawGeometry( command_buffer, geometry.Parts[i].VertexCount,</span><br><span class="line">                 instance_count, geometry.Parts[i].VertexOffset, first_instance );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在停止record command buffer前,需要end render pass.之后需要另一个transition on a swapchain image.当完成在single frame of animation上进行绘制,想要在swapchain image上显示.为此需要改变它的layout为VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,因为这是presentation engine正确显示image要求的.这个不走需要显示进行.</p>
+<p>$\color{red}{注意}$,如果用于graphics operations和presentations的queues不同,需要一个queue ownership transfer.这通过另一个image memory barrier完成.之后,我们能停止record a command buffer.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">EndRenderPass( command_buffer );</span><br><span class="line"><span class="keyword">if</span>( present_queue_family_index != graphics_queue_family_index ) &#123;</span><br><span class="line">    ImageTransition image_transition_before_present = &#123;</span><br><span class="line">        swapchain_image,</span><br><span class="line">        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,</span><br><span class="line">        VK_ACCESS_MEMORY_READ_BIT,</span><br><span class="line">        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,</span><br><span class="line">        graphics_queue_family_index,</span><br><span class="line">        present_queue_family_index,</span><br><span class="line">        VK_IMAGE_ASPECT_COLOR_BIT</span><br><span class="line">    &#125;;</span><br><span class="line">    SetImageMemoryBarrier( command_buffer,</span><br><span class="line">                          VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,</span><br><span class="line">                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, &#123; image_transition_before_present &#125;</span><br><span class="line">                         );</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !EndCommandBufferRecordingOperation( command_buffer ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>我们能用这个cb并submit it to a (graphic) queue.只能submit一次,因为flag 为VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT.</p>
+<p>submit这个cb之后,能显示到swapchain image上.需要注意submission和presentation operations需要进行同步</p>
+<h3 id="advanced"><a href="#advanced" class="headerlink" title="advanced"></a>advanced</h3><h3 id="Recording-command-buffers-on-multiple-threads"><a href="#Recording-command-buffers-on-multiple-threads" class="headerlink" title="*Recording command buffers on multiple threads"></a>*Recording command buffers on multiple threads</h3><p>自定义结构</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CommandBufferRecordingThreadParameters</span> &#123;</span></span><br><span class="line">    VkCommandBuffer CommandBuffer;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">bool</span>( VkCommandBuffer )&gt; RecordingFunction;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每个线程一个,记录cbs.RecordingFunction定义了一个在独立thread里record command buffer的function.</p>
+<p>为了多线程使用vulkan,需要记住一些规则.</p>
+<p>第一不能再多线程修改同一个object.比如不能再多线程从同一个pool allocate command buffers或不能从多线程更新descriptor set.</p>
+<p>只有再资源时只读的或者时访问分开的资源吗,我们能从多线程访问.但很难追踪哪个资源时哪个线程创建的.通常,资源创建和修改再主线程(rendering thread).</p>
+<p>在Vulkan中使用多线程最常见的场景是并发地记录命令缓冲区.这个操作花费大量时间,分开到多线程进行时很有道理的.</p>
+<p>当多线程进行record command buffers时需要多线程和每个线程对应一个独立的command pool</p>
+<p>command buffer recording不影响其他资源(除了pool).只准备给一个queue submit commands,所以能record任何操作使用任何资源.比如记录多个操作访问同样的图片或descriptor sets.同样的pipelines能同时绑定不同的command buffers.我们也能record operations绘制到同样的attachments里.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::thread&gt; threads( threads_parameters.size() );</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; threads_parameters.size(); ++i ) &#123;</span><br><span class="line">    threads[i] = <span class="built_in">std</span>::thread::thread(</span><br><span class="line">        threads_parameters[i].RecordingFunction,</span><br><span class="line">        threads_parameters[i].CommandBuffer );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>所有thread完成record cbs后需要收集到一起然后submit它们到queue.</p>
+<p>真实app里会避免这样创建和销毁threads的方式.相反,使用已有的job/task system并使用它们record需要的cbs.如图.</p>
+<p>submission只能再单线程进行(queus,similarly to other resources,cannot be accessed concurrently),需要等待所有线程完成.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkCommandBuffer&gt; command_buffers( threads_parameters.size() );</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">size_t</span> i = <span class="number">0</span>; i &lt; threads_parameters.size(); ++i ) &#123;</span><br><span class="line">    threads[i].join();</span><br><span class="line">    command_buffers[i] = threads_parameters[i].CommandBuffer;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( <span class="built_in">queue</span>, wait_semaphore_infos,</span><br><span class="line">                                 command_buffers, signal_semaphores, fence ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>submitting cbs一次只能再一个线程进行.</p>
+<p><img src="media/multithreadcbs.png" alt></p>
+<p>swapchain object也会发生同样的情况.同时只能在一个线程acquire和present swapchain images.</p>
+<p>需要留意将layout 从VK_IMAGE_LAYOUT_PRESENT_SRC_KHR (or VK_IMAGE_LAYOUT_UNDEFINED)转换为VK_IMAGE_LAYOUT_PRESENT_SRC_KHR.</p>
+<h3 id="Preparing-a-single-frame-of-animation"><a href="#Preparing-a-single-frame-of-animation" class="headerlink" title="Preparing a single frame of animation"></a>Preparing a single frame of animation</h3><p>Preparing a single frame of animation can be divided into five steps:</p>
+<ol>
+<li>Acquiring a swapchain image.</li>
+<li>Creating a framebuffer.</li>
+<li>Recording a command buffer.</li>
+<li>Submitting the command buffer to the queue.</li>
+<li>Presenting an image.</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">uint32_t</span> image_index;</span><br><span class="line"><span class="keyword">if</span>( !AcquireSwapchainImage( logical_device, swapchain,</span><br><span class="line">                           image_acquired_semaphore, VK_NULL_HANDLE, image_index ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkImageView&gt; attachments = &#123; swapchain_image_views[image_index]</span><br><span class="line">                                       &#125;;</span><br><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != depth_attachment ) &#123;</span><br><span class="line">    attachments.push_back( depth_attachment );</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateFramebuffer( logical_device, render_pass, attachments,</span><br><span class="line">                       swapchain_size.width, swapchain_size.height, <span class="number">1</span>, *framebuffer ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !record_command_buffer( command_buffer, image_index, *framebuffer ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;WaitSemaphoreInfo&gt; wait_semaphore_infos = wait_infos;</span><br><span class="line">wait_semaphore_infos.push_back( &#123;</span><br><span class="line">    image_acquired_semaphore,</span><br><span class="line">    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT</span><br><span class="line">&#125; );</span><br><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( graphics_queue, wait_semaphore_infos, &#123;</span><br><span class="line">    command_buffer &#125;, &#123; ready_to_present_semaphore &#125;, finished_drawing_fence )</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">PresentInfo present_info = &#123;</span><br><span class="line">    swapchain,</span><br><span class="line">    image_index</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">if</span>( !PresentImage( present_queue, &#123; ready_to_present_semaphore &#125;, &#123;</span><br><span class="line">    present_info &#125; ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>fence用于GPU确定cb结束</p>
+<h3 id="Increasing-performance-through-increasing-the-number-of-separately-rendered-frames"><a href="#Increasing-performance-through-increasing-the-number-of-separately-rendered-frames" class="headerlink" title="*Increasing performance through increasing the number of separately rendered frames"></a>*Increasing performance through increasing the number of separately rendered frames</h3><p>在等待cb 运行结束这段时间是浪费了的.所以需要独立render multiple frames of animation .</p>
+<p>自定义结构体</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">FrameResources</span> &#123;</span></span><br><span class="line">    VkCommandBuffer CommandBuffer;<span class="comment">//单帧独立的comman buffer</span></span><br><span class="line">    VkDestroyer&lt;VkSemaphore&gt; ImageAcquiredSemaphore;<span class="comment">//给presentation engine的信号量</span></span><br><span class="line">    VkDestroyer&lt;VkSemaphore&gt; ReadyToPresentSemaphore;<span class="comment">//用于知道queue停止运行该cb</span></span><br><span class="line">    VkDestroyer&lt;VkFence&gt; DrawingFinishedFence;<span class="comment">//当signaled表示GPU运行完了</span></span><br><span class="line">    VkDestroyer&lt;VkImageView&gt; DepthAttachment;<span class="comment">//</span></span><br><span class="line">    VkDestroyer&lt;VkFramebuffer&gt; Framebuffer;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>用于管理单帧生命周期内管理的资源.</p>
+<p>rendering animation是要给循环.一帧绘制,一帧显示.</p>
+<p>需要准备多份set</p>
+<p><img src="media/renderingframesofanimation.png" alt></p>
+<p>Tests have shown that increasing the number of frame resources from one to two may increase the performance by 50%.</p>
+<p>Adding a third set increases the performance further, but the growth isn’t as big this time.</p>
+<p>So, the performance gain is smaller with each additional set of frame resources. Three sets of rendering resources seems like a good choice, but we should perform our own tests and see what is best for our specific needs.</p>
+<p><img src="media/renderframeofanimationsets.png" alt></p>
+<p>check</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">uint32_t</span> frame_index = <span class="number">0</span>;</span><br><span class="line">FrameResources &amp; current_frame = frame_resources[frame_index];</span><br><span class="line"><span class="keyword">if</span>( !WaitForFences( logical_device, &#123; *current_frame.DrawingFinishedFence</span><br><span class="line">                                    &#125;, <span class="literal">false</span>, <span class="number">2000000000</span> ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !ResetFences( logical_device, &#123; *current_frame.DrawingFinishedFence &#125; )</span><br><span class="line">  ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">InitVkDestroyer( logical_device, current_frame.Framebuffer );</span><br><span class="line"><span class="keyword">if</span>( !PrepareSingleFrameOfAnimation( logical_device, graphics_queue,</span><br><span class="line">                                   present_queue, swapchain, swapchain_size, swapchain_image_views,</span><br><span class="line">                                   *current_frame.DepthAttachment, wait_infos,</span><br><span class="line">                                   *current_frame.ImageAcquiredSemaphore,</span><br><span class="line">                                   *current_frame.ReadyToPresentSemaphore,</span><br><span class="line">                                   *current_frame.DrawingFinishedFence, record_command_buffer,</span><br><span class="line">                                   current_frame.CommandBuffer, render_pass, current_frame.Framebuffer ) ) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">frame_index = (frame_index + <span class="number">1</span>) % frame_resources.size();</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/6.RenderPassesAndFramebuffers/" rel="next" title="Render Passes and Framebuffers">
+                <i class="fa fa-chevron-left"></i> Render Passes and Framebuffers
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/2.ImagePresentation/" rel="prev" title="Image Presentation">
+                Image Presentation <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#9-Command-Recording-and-Drawing"><span class="nav-number">1.</span> <span class="nav-text">9.Command Recording and Drawing</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#介绍"><span class="nav-number">1.1.</span> <span class="nav-text">介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内容"><span class="nav-number">1.1.1.</span> <span class="nav-text">内容</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#简述"><span class="nav-number">1.2.</span> <span class="nav-text">简述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#准备"><span class="nav-number">1.3.</span> <span class="nav-text">准备</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Clearing-a-color-image"><span class="nav-number">1.3.1.</span> <span class="nav-text">Clearing a color image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Clearing-a-depth-stencil-image"><span class="nav-number">1.3.2.</span> <span class="nav-text">Clearing a depth-stencil image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Clearing-render-pass-attachments"><span class="nav-number">1.3.3.</span> <span class="nav-text">Clearing render pass attachments</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binding-vertex-buffers"><span class="nav-number">1.3.4.</span> <span class="nav-text">Binding vertex buffers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Binding-an-index-buffer"><span class="nav-number">1.3.5.</span> <span class="nav-text">Binding an index buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Providing-data-to-shaders-through-push-constants"><span class="nav-number">1.3.6.</span> <span class="nav-text">Providing data to shaders through push constants</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#settings"><span class="nav-number">1.4.</span> <span class="nav-text">settings</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-viewport-state-dynamically"><span class="nav-number">1.4.1.</span> <span class="nav-text">Setting viewport state dynamically</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-scissor-state-dynamically"><span class="nav-number">1.4.2.</span> <span class="nav-text">Setting scissor state dynamically</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-line-width-states-dynamically"><span class="nav-number">1.4.3.</span> <span class="nav-text">Setting line width states dynamically</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-depth-bias-state-dynamically"><span class="nav-number">1.4.4.</span> <span class="nav-text">Setting depth bias state dynamically</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-blend-constants-states-dynamically"><span class="nav-number">1.4.5.</span> <span class="nav-text">Setting blend constants states dynamically</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#drawing"><span class="nav-number">1.5.</span> <span class="nav-text">drawing</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Drawing-a-geometry"><span class="nav-number">1.5.1.</span> <span class="nav-text">Drawing a geometry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Drawing-an-indexed-geometry"><span class="nav-number">1.5.2.</span> <span class="nav-text">Drawing an indexed geometry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Dispatching-compute-work"><span class="nav-number">1.5.3.</span> <span class="nav-text">Dispatching compute work</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Executing-a-secondary-command-buffer-inside-a-primary-command-buffer"><span class="nav-number">1.5.4.</span> <span class="nav-text">Executing a secondary command buffer inside a primary command buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#example"><span class="nav-number">1.5.5.</span> <span class="nav-text">example</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recording-a-command-buffer-that-draws-a-geometry-with-a-dynamic-viewport-and-scissor-states"><span class="nav-number">1.5.6.</span> <span class="nav-text">Recording a command buffer that draws a geometry with a dynamic viewport and scissor states</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#advanced"><span class="nav-number">1.5.7.</span> <span class="nav-text">advanced</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Recording-command-buffers-on-multiple-threads"><span class="nav-number">1.5.8.</span> <span class="nav-text">*Recording command buffers on multiple threads</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Preparing-a-single-frame-of-animation"><span class="nav-number">1.5.9.</span> <span class="nav-text">Preparing a single frame of animation</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Increasing-performance-through-increasing-the-number-of-separately-rendered-frames"><span class="nav-number">1.5.10.</span> <span class="nav-text">*Increasing performance through increasing the number of separately rendered frames</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

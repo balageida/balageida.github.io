@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Descriptor Sets[TOC] Creating a samplerCreating a sampled imageCreating a combined image samplerCreating a storage imageCreating a uniform texel bufferCreating a storage texel bufferCreating a unifor">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Descriptor Sets">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Descriptor Sets[TOC] Creating a samplerCreating a sampled imageCreating a combined image samplerCreating a storage imageCreating a uniform texel bufferCreating a storage texel bufferCreating a unifor">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/media/descriptorsetspool.png">
+<meta property="og:updated_time" content="2019-04-05T13:19:43.570Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Descriptor Sets">
+<meta name="twitter:description" content="Descriptor Sets[TOC] Creating a samplerCreating a sampled imageCreating a combined image samplerCreating a storage imageCreating a uniform texel bufferCreating a storage texel bufferCreating a unifor">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/media/descriptorsetspool.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Descriptor Sets | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Descriptor Sets
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:19:43" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Descriptor-Sets"><a href="#Descriptor-Sets" class="headerlink" title="Descriptor Sets"></a>Descriptor Sets</h1><p>[TOC]</p>
+<p>Creating a sampler<br>Creating a sampled image<br>Creating a combined image sampler<br>Creating a storage image<br>Creating a uniform texel buffer<br>Creating a storage texel buffer<br>Creating a uniform buffer<br>Creating a storage buffer<br>Creating an input attachment<br>Creating a descriptor set layout<br>Creating a descriptor pool<br>Allocating descriptor sets<br>Updating descriptor sets<br>Binding descriptor sets<br>Creating descriptors with a texture and a uniform buffer<br>Freeing descriptor sets<br>Resetting a descriptor pool<br>Destroying a descriptor pool<br>Destroying a descriptor set layout<br>Destroying a sampler</p>
+<p>在现代计算机图形学领域,多数image数据(vertices,pixels,fragments,voxel)的渲染和执行都是通过可编程pipeline和shaders实现.相关的:textures,samplers,buffers,uniform variables.在vulkan里这些通过descriptor sets提供.</p>
+<p>Descriptors表示shader resources的不透明的structures.有descriptor set layouts指明内容,组织成groups或sets.为了给shaders提供资源,给Pipelines绑定descriptor sets.我们能一次绑定多个sets.为了从shaders内部访问resources,我们需要指定从哪个set以及从set中的哪个位置（称为binding）获取给定资源.</p>
+<h2 id="sampler"><a href="#sampler" class="headerlink" title="sampler"></a>sampler</h2><h3 id="create-a-sampler"><a href="#create-a-sampler" class="headerlink" title="create a sampler"></a>create a sampler</h3><p>Samplers定义了image data加载到shader里的一组参数.包括address caculations(wrapping or repeating)、filtering(linear or nearest)、use mipmaps.</p>
+<p>VkSamplerCreateInfo</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">VkSamplerCreateInfo sampler_create_info = &#123;</span><br><span class="line">	VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    mag_filter,</span><br><span class="line">    min_filter,</span><br><span class="line">    mipmap_mode,</span><br><span class="line">    u_address_mode,</span><br><span class="line">    v_address_mode,</span><br><span class="line">    w_address_mode,</span><br><span class="line">    lod_bias,</span><br><span class="line">    anisotropy_enable,</span><br><span class="line">    max_anisotropy,</span><br><span class="line">    compare_enable,</span><br><span class="line">    compare_operator,</span><br><span class="line">    min_lod,</span><br><span class="line">    max_lod,</span><br><span class="line">    border_color,</span><br><span class="line">    unnormalized_coords</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateSampler( logical_device, &amp;sampler_create_info,</span><br><span class="line"><span class="literal">nullptr</span>, &amp;sampler );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create sampler."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>为了在shader里指明samplr,需要创建一个sampler uniform 变量</p>
+<p>形如</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layout (<span class="built_in">set</span>=m, binding=n) uniform sampler &lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<h3 id="create-a-sampled-image"><a href="#create-a-sampled-image" class="headerlink" title="create a sampled image"></a>create a sampled image</h3><p>sampled images用于在shaders里从images(textures)读取数据.通常是一起创建,VK_IMAGE_USAGE_SAMPLED_BIT usage.</p>
+<p>在shaders里,我们能用多个samplers按照不同方式读取同一个image.也能一个sampler对应多个images.但有些平台,二者是何为一个obj的.</p>
+<p>不是所有image foramt都支持sampled iamges.这依赖于app执行平台.下列是总能用于sampled images和linearly filtered sampled images的formats.不限于:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_B4G4R4A4_UNORM_PACK16</span><br><span class="line">VK_FORMAT_R5G6B5_UNORM_PACK16</span><br><span class="line">VK_FORMAT_A1R5G5B5_UNORM_PACK16</span><br><span class="line">VK_FORMAT_R8_UNORM and VK_FORMAT_R8_SNORM</span><br><span class="line">VK_FORMAT_R8G8_UNORM and VK_FORMAT_R8G8_SNORM</span><br><span class="line">VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SNORM, and</span><br><span class="line">VK_FORMAT_R8G8B8A8_SRGB</span><br><span class="line">VK_FORMAT_B8G8R8A8_UNORM and VK_FORMAT_B8G8R8A8_SRGB</span><br><span class="line">VK_FORMAT_A8B8G8R8_UNORM_PACK32, VK_FORMAT_A8B8G8R8_SNORM_PACK32,</span><br><span class="line">and VK_FORMAT_A8B8G8R8_SRGB_PACK32</span><br><span class="line">VK_FORMAT_A2B10G10R10_UNORM_PACK32</span><br><span class="line">VK_FORMAT_R16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16B16A16_SFLOAT</span><br><span class="line">VK_FORMAT_B10G11R11_UFLOAT_PACK32</span><br><span class="line">VK_FORMAT_E5B9G9R9_UFLOAT_PACK32</span><br></pre></td></tr></table></figure>
+<p>其他格式性需要自己检查一下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">VkFormatProperties format_properties;</span><br><span class="line">vkGetPhysicalDeviceFormatProperties( physical_device, format,</span><br><span class="line">&amp;format_properties );</span><br><span class="line"><span class="keyword">if</span>( !(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for a sampled image."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( linear_filtering &amp;&amp;</span><br><span class="line">!(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for a linear image</span></span><br><span class="line"><span class="string">    filtering."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果满足需求,可以创建一个image,一个memory object,一个image view(vulkan中images are represented with iamge views most of the time).指明usage为VK_IMAGE_USAGE_SAMPLED_BIT</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImage( logical_device, type, format, size, num_mipmaps,</span><br><span class="line">num_layers, VK_SAMPLE_COUNT_1_BIT, usage | VK_IMAGE_USAGE_SAMPLED_BIT,</span><br><span class="line"><span class="literal">false</span>, sampled_image ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToImage( physical_device, logical_device,</span><br><span class="line">sampled_image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateImageView( logical_device, sampled_image, view_type, format,</span><br><span class="line">aspect, sampled_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>当想用一个image作为sampled image,在加载数据到shaders前,我们需要变换image的layout为VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.</p>
+<p>shader里</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layout (set=m, binding=n) uniform texture2D &lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<h3 id="create-a-combined-image-sampler"><a href="#create-a-combined-image-sampler" class="headerlink" title="create a combined image sampler"></a>create a combined image sampler</h3><p>创建和分开时是一样的,只是shaders里不一样.descriptor为VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateSampler( logical_device, mag_filter, min_filter, mipmap_mode,</span><br><span class="line">u_address_mode, v_address_mode, w_address_mode, lod_bias,</span><br><span class="line">anisotropy_enable, max_anisotropy, compare_enable, compare_operator,</span><br><span class="line">min_lod, max_lod, border_color, unnormalized_coords, sampler ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">bool</span> linear_filtering = (mag_filter == VK_FILTER_LINEAR) || (min_filter ==</span><br><span class="line">VK_FILTER_LINEAR) || (mipmap_mode == VK_SAMPLER_MIPMAP_MODE_LINEAR);</span><br><span class="line"><span class="keyword">if</span>( !CreateSampledImage( physical_device, logical_device, type, format,</span><br><span class="line">size, num_mipmaps, num_layers, usage, view_type, aspect, linear_filtering,</span><br><span class="line">sampled_image, sampled_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>使用sampler关键词</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layout (<span class="built_in">set</span>=m, binding=n) uniform sampler2D &lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<p>有些平台性能更好.</p>
+<h2 id="storage"><a href="#storage" class="headerlink" title="storage"></a>storage</h2><h3 id="create-a-storage-image"><a href="#create-a-storage-image" class="headerlink" title="create a storage image"></a>create a storage image</h3><p>storage image允许我们从images里加载数据到Pipelines,也可以从shader存储数据到images.这类images需要指明usage为VK_IMAGE_USAGE_STORAGE_BIT</p>
+<p>虽然可以从这类images里load数据,单数据是unfiltered(所以不能sampler)</p>
+<p>descriptors type为VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</p>
+<p>需要指明合适的格式,不是所有格式都支持storage images.与平台相关,单下列是都支持的(not limited).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SNORM,</span><br><span class="line">VK_FORMAT_R8G8B8A8_UINT, <span class="keyword">and</span> VK_FORMAT_R8G8B8A8_SINT</span><br><span class="line">VK_FORMAT_R16G16B16A16_UINT, VK_FORMAT_R16G16B16A16_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R16G16B16A16_SFLOAT</span><br><span class="line">VK_FORMAT_R32_UINT, VK_FORMAT_R32_SINT <span class="keyword">and</span> VK_FORMAT_R32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32_UINT, VK_FORMAT_R32G32_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R32G32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32B32A32_UINT, VK_FORMAT_R32G32B32A32_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R32G32B32A32_SFLOAT</span><br></pre></td></tr></table></figure>
+<p>如果想要原子操作,只能用如下格式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_R32_UINT</span><br><span class="line">VK_FORMAT_R32_SINT</span><br></pre></td></tr></table></figure>
+<p>如果想用其他的,需要检查是否支持或是否支持原子操作.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">VkFormatProperties format_properties;</span><br><span class="line">vkGetPhysicalDeviceFormatProperties( physical_device, format,</span><br><span class="line">&amp;format_properties );</span><br><span class="line"><span class="keyword">if</span>( !(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT) ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for a storage image."</span> &lt;&lt;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( atomic_operations &amp;&amp;</span><br><span class="line">!(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT) ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for atomic operations on</span></span><br><span class="line"><span class="string">storage images."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果支持,如常创建images.指明usage为VK_IMAGE_USAGE_STORAGE_BIT,然后创建memory object,绑定都image,然后是image view.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImage( logical_device, type, format, size, num_mipmaps,</span><br><span class="line">num_layers, VK_SAMPLE_COUNT_1_BIT, usage | VK_IMAGE_USAGE_STORAGE_BIT,</span><br><span class="line"><span class="literal">false</span>, storage_image ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToImage( physical_device, logical_device,</span><br><span class="line">storage_image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateImageView( logical_device, storage_image, view_type, format,</span><br><span class="line">aspect, storage_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>在load/store数据前需要设置layout为VK_IMAGE_LAYOUT_GENERAL.这是这些操作为唯一支持的layout.</p>
+<p>GLSL的storage images定义的例子</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layout (<span class="built_in">set</span>=m, binding=n, r32f) uniform image2D &lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<h3 id="create-uniform-texel-buffer"><a href="#create-uniform-texel-buffer" class="headerlink" title="create uniform texel buffer"></a>create uniform texel buffer</h3><p>uniform texel buffer允许我们想从images里读取数据一样,他们的内容不是一个单值(scalar)的数组,而是格式化整个为pixels(texel)(1,2,3,4种分项).能比images访问更多的数据.</p>
+<p>创建一个uniform texel buffer的buffer时usage为VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</p>
+<p>下列是可用于uniform texel buffers(not limited)的formats:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_R8_UNORM, VK_FORMAT_R8_SNORM, VK_FORMAT_R8_UINT, <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R8_SINT</span><br><span class="line">VK_FORMAT_R8G8_UNORM, VK_FORMAT_R8G8_SNORM, VK_FORMAT_R8G8_UINT,</span><br><span class="line"><span class="keyword">and</span> VK_FORMAT_R8G8_SINT</span><br><span class="line">VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_SNORM,</span><br><span class="line">VK_FORMAT_R8G8B8A8_UINT, <span class="keyword">and</span> VK_FORMAT_R8G8B8A8_SINT</span><br><span class="line">VK_FORMAT_B8G8R8A8_UNORM</span><br><span class="line">VK_FORMAT_A8B8G8R8_UNORM_PACK32, VK_FORMAT_A8B8G8R8_SNORM_PACK32,</span><br><span class="line">VK_FORMAT_A8B8G8R8_UINT_PACK32, <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_A8B8G8R8_SINT_PACK32</span><br><span class="line">VK_FORMAT_A2B10G10R10_UNORM_PACK32 <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_A2B10G10R10_UINT_PACK32</span><br><span class="line">VK_FORMAT_R16_UINT, VK_FORMAT_R16_SINT <span class="keyword">and</span> VK_FORMAT_R16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R16G16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16B16A16_UINT, VK_FORMAT_R16G16B16A16_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R16G16B16A16_SFLOAT</span><br><span class="line">VK_FORMAT_R32_UINT, VK_FORMAT_R32_SINT <span class="keyword">and</span> VK_FORMAT_R32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32_UINT, VK_FORMAT_R32G32_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R32G32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32B32A32_UINT, VK_FORMAT_R32G32B32A32_SINT <span class="keyword">and</span></span><br><span class="line">VK_FORMAT_R32G32B32A32_SFLOAT</span><br><span class="line">VK_FORMAT_B10G11R11_UFLOAT_PACK32</span><br></pre></td></tr></table></figure>
+<p>检查是否支持</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VkFormatProperties format_properties;</span><br><span class="line">vkGetPhysicalDeviceFormatProperties( physical_device, format,</span><br><span class="line">&amp;format_properties );</span><br><span class="line"><span class="keyword">if</span>( !(format_properties.bufferFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT) ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for a uniform texel</span></span><br><span class="line"><span class="string">buffer."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后create a buffer,memory object and bind it to the buffer,create a buffer view:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateBuffer( logical_device, size, usage |</span><br><span class="line">VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, uniform_texel_buffer ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToBuffer( physical_device, logical_device,</span><br><span class="line">uniform_texel_buffer, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object )</span><br><span class="line">) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateBufferView( logical_device, uniform_texel_buffer, format, <span class="number">0</span>,</span><br><span class="line">VK_WHOLE_SIZE, uniform_texel_buffer_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>uniform texel buffers,我们需要指明data format,以便shaders按照合适的方式访问buffer的内容,这就是buffer view的作用.</p>
+<p>GLSL</p>
+<figure class="highlight glsl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">layout</span> (set=m, <span class="keyword">binding</span>=n) <span class="keyword">uniform</span> <span class="type">samplerBuffer</span> &lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<h3 id="create-a-torage-texel-buffer"><a href="#create-a-torage-texel-buffer" class="headerlink" title="create a torage texel buffer"></a>create a torage texel buffer</h3><p>如果想在shader中存数据到buffer里,需要使用storage buffers,usage为VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</p>
+<p>descriptor types:VK_DESCRIPTOR_TYPE_STORAGE_BUFFER 或者VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</p>
+<p>storage buffers需要注意对齐问题,遵循GLSL的std430是最简单的方式.基本的对齐方式与Uniform buffer的数组和结构体差不多.它们的偏移量不需要四舍五入到16的倍数.规则如下:</p>
+<blockquote>
+<ul>
+<li><p>A scalar variable of size N must be placed at offsets that are a multiple of N</p>
+</li>
+<li><p>A vector with two components, where each component has a size of N, must be</p>
+<p>placed at offsets that are a multiple of 2N</p>
+</li>
+<li><p>A vector with three or four components, where each component has a size of N,</p>
+<p>must be placed at offsets that are a multiple of 4N</p>
+</li>
+<li><p>An array with elements of size N must be placed at offsets that are a multiple of N</p>
+</li>
+<li><p>A structure must be placed at offsets that are a multiple of the biggest offset of</p>
+</li>
+<li><p>any of its members (a member with the biggest offset requirement)</p>
+</li>
+<li><p>A row-major matrix must be placed at an offset equal to the offset of a vector</p>
+<p>with the number of components equal to the number of columns in the matrix</p>
+</li>
+<li><p>A column-major matrix must be placed at the same offsets as its columns</p>
+</li>
+</ul>
+</blockquote>
+<p>dynamic storage buffers不同之处为它们的base memory offset被定义了.在描述符集更新期间为普通存储缓冲区指定的偏移量和范围在下一次更新之前保持不变.在动态变化的情况下,指定的偏移量将变为基址,随后由描述符集绑定到命令缓冲区时指定的动态偏移量修改.</p>
+<p>GLSL中使用关键词buffer</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">layout (set=m, binding=n) buffer &lt;variable name&gt;</span><br><span class="line">&#123;</span><br><span class="line">vec4 &lt;member 1 name&gt;;</span><br><span class="line">mat4 &lt;member 2 name&gt;;</span><br><span class="line">// ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>这里有个非常关键的信息没有说，关于对齐的计算</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">size_t</span> minUboAlignment = device-&gt;properties.limits.minUniformBufferOffsetAlignment;</span><br><span class="line">dynamicAlignment = <span class="keyword">sizeof</span> (customstruct);</span><br><span class="line"><span class="keyword">if</span> (minUboAlignment &gt; <span class="number">0</span>) &#123;</span><br><span class="line">dynamicAlignment = (dynamicAlignment + <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(minUboAlignment - <span class="number">1</span>)) &amp; ~(<span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(minUboAlignment - <span class="number">1</span>));</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">size_t</span> bufferSize = count * dynamicAlignment;</span><br><span class="line">ptr = (customstruct*)tl::alignedAlloc (bufferSize, dynamicAlignment);</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"minUniformBufferOffsetAlignment = "</span> &lt;&lt; minUboAlignment &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"dynamicAlignment = "</span> &lt;&lt; dynamicAlignment &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="create-an-input-attachment"><a href="#create-an-input-attachment" class="headerlink" title="create an input attachment"></a>create an input attachment</h3><p>attachment是render passes中dc绘制的RT.</p>
+<p>对于input attachments,通常为color或depth/stencil attachments,也可能是其他images.</p>
+<p>usage:VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT</p>
+<p> descriptors type:VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</p>
+<p>vulkan里render passes有一个及以上的subpass,在一个subpass写了attachment,后面的subpass可以读.也是唯一在shaders里读取attachments的方式.</p>
+<p>当从input attachments读取数据时,我们仅限于与processed fragment的location对应的location.但这种方法可能比渲染到attachments中、结束render pass、将image绑定到作为sampled image(texture)的descriptor set以及启动另一个不将给定image用作其任何attachments的render pass更为理想.</p>
+<p>对于Input attachments,也能用其他images(不必作为color or depth/stencil attachments).只需要使用usage VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT和合适的格式创建.下列格式是强制支持的input attachment(color).</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_R5G6B5_UNORM_PACK16</span><br><span class="line">VK_FORMAT_A1R5G5B5_UNORM_PACK16</span><br><span class="line">VK_FORMAT_R8_UNORM, VK_FORMAT_R8_UINT and VK_FORMAT_R8_SINT</span><br><span class="line">VK_FORMAT_R8G8_UNORM, VK_FORMAT_R8G8_UINT, and VK_FORMAT_R8G8_SINT</span><br><span class="line">VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R8G8B8A8_UINT,</span><br><span class="line">VK_FORMAT_R8G8B8A8_SINT, and VK_FORMAT_R8G8B8A8_SRGB</span><br><span class="line">VK_FORMAT_B8G8R8A8_UNORM and VK_FORMAT_B8G8R8A8_SRGB</span><br><span class="line">VK_FORMAT_A8B8G8R8_UNORM_PACK32, VK_FORMAT_A8B8G8R8_UINT_PACK32,</span><br><span class="line">VK_FORMAT_A8B8G8R8_SINT_PACK32, and</span><br><span class="line">VK_FORMAT_A8B8G8R8_SRGB_PACK32</span><br><span class="line">VK_FORMAT_A2B10G10R10_UNORM_PACK32 and</span><br><span class="line">VK_FORMAT_A2B10G10R10_UINT_PACK32</span><br><span class="line">VK_FORMAT_R16_UINT, VK_FORMAT_R16_SINT and VK_FORMAT_R16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16_UINT, VK_FORMAT_R16G16_SINT and</span><br><span class="line">VK_FORMAT_R16G16_SFLOAT</span><br><span class="line">VK_FORMAT_R16G16B16A16_UINT, VK_FORMAT_R16G16B16A16_SINT, and</span><br><span class="line">VK_FORMAT_R16G16B16A16_SFLOAT</span><br><span class="line">VK_FORMAT_R32_UINT, VK_FORMAT_R32_SINT, and VK_FORMAT_R32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32_UINT, VK_FORMAT_R32G32_SINT, and</span><br><span class="line">VK_FORMAT_R32G32_SFLOAT</span><br><span class="line">VK_FORMAT_R32G32B32A32_UINT, VK_FORMAT_R32G32B32A32_SINT, and</span><br><span class="line">VK_FORMAT_R32G32B32A32_SFLOAT</span><br></pre></td></tr></table></figure>
+<p>depth/stencil 强制支持的</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">VK_FORMAT_D16_UNORM</span><br><span class="line">VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D32_SFLOAT (at least one of</span><br><span class="line">these two formats must be supported)</span><br><span class="line">VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT (at</span><br><span class="line">least one of these two formats must be supported)</span><br></pre></td></tr></table></figure>
+<p>其他格式需要检查</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">VkFormatProperties format_properties;</span><br><span class="line">vkGetPhysicalDeviceFormatProperties( physical_device, format,</span><br><span class="line">&amp;format_properties );</span><br><span class="line"><span class="keyword">if</span>( (aspect &amp; VK_IMAGE_ASPECT_COLOR_BIT) &amp;&amp;</span><br><span class="line">!(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT) ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for an input attachment."</span></span><br><span class="line">&lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( (aspect &amp; (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_DEPTH_BIT)) &amp;&amp;</span><br><span class="line">!(format_properties.optimalTilingFeatures &amp;</span><br><span class="line">VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) ) &#123;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Provided format is not supported for an input attachment."</span></span><br><span class="line">&lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后创建image,allocate a memory object(或使用已有的),bind it to the image,create an image view.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImage( logical_device, type, format, size, <span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">VK_SAMPLE_COUNT_1_BIT, usage | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, <span class="literal">false</span>,</span><br><span class="line">input_attachment ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToImage( physical_device, logical_device,</span><br><span class="line">input_attachment, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateImageView( logical_device, input_attachment, view_type, format,</span><br><span class="line">aspect, input_attachment_image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>需要准备合适的render pass的descrition,包括framebuffers的image views.</p>
+<p>GLSL</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">layout (input_attachment_index=i, <span class="built_in">set</span>=m, binding=n) uniform subpassInput</span><br><span class="line">&lt;variable name&gt;;</span><br></pre></td></tr></table></figure>
+<h2 id="descriptor"><a href="#descriptor" class="headerlink" title="descriptor"></a>descriptor</h2><h3 id="create-a-descriptor-set-layout"><a href="#create-a-descriptor-set-layout" class="headerlink" title="create a descriptor set layout"></a>create a descriptor set layout</h3><p>descritor sets将很多resources(descriptors)收集到一个object里.之后再pipeline中建立了app和shaders的接口.但是硬件要知道什么资源组织在set里,每种有多少,什么顺序,我们需要创建descriptor set layout.</p>
+<p>descriptor set layout指明了descriptor set的核心结构,同时,严格定义了什么资源能被它bound.</p>
+<p>当创建layout需要知道什么资源(descriptor types)会被用以及他们的顺序.顺序是通过bindings指明的.shader里的index.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">layout (set=m, binding=n) // variable definition</span><br></pre></td></tr></table></figure>
+<p>西安志明所有资源的列表</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(bindings.size()),</span><br><span class="line">    bindings.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>create layout</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateDescriptorSetLayout( logical_device,</span><br><span class="line">&amp;descriptor_set_layout_create_info, <span class="literal">nullptr</span>, &amp;descriptor_set_layout );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a layout for descriptor sets."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>descriptor set layouts也form了一个个pipeline layout,定义了已给pipeline能访问的resources type.created layouts是创建pipeline layout的一部分也是descriptor set allocation要求的.</p>
+<h3 id="createa-a-descriptor-pool"><a href="#createa-a-descriptor-pool" class="headerlink" title="createa a descriptor pool"></a>createa a descriptor pool</h3><p>descriptors由descriptor pools分配.创建descriptor pools时需要指明什么descriptors,多少，能从该pool创建.</p>
+<p>VkDescriptorPoolCreateInfo</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">VkDescriptorPoolCreateInfo descriptor_pool_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    free_individual_sets ?</span><br><span class="line"></span><br><span class="line">    VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT : <span class="number">0</span>,</span><br><span class="line">    max_sets_count,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(descriptor_types.size()),</span><br><span class="line">    descriptor_types.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>注意多线程问题.</p>
+<h3 id="allocating-descriptor-sets"><a href="#allocating-descriptor-sets" class="headerlink" title="allocating descriptor sets"></a>allocating descriptor sets</h3><p>Descriptor sets汇集shader resources(descriptors)到一个object容器里.它的内容，types,资源数量由descritpor set layout定义.storage 从池里取,</p>
+<p>descriptor sets提供了shaders的resources.他们形成了app和programmable pipeline stages的interface.这个interface的结构由descriptor set layouts定义.当使用image或buffer resources更新descriptor sets时提供了真实数据,然后在recording 操作绑定descriptor sets到cb.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkDescriptorSetAllocateInfo descriptor_set_allocate_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    descriptor_pool,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(descriptor_set_layouts.size()),</span><br><span class="line">    descriptor_set_layouts.data()</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>然后,allocate descriptor sets</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">descriptor_sets.resize( descriptor_set_layouts.size() );</span><br><span class="line">VkResult result = vkAllocateDescriptorSets( logical_device,</span><br><span class="line">&amp;descriptor_set_allocate_info, descriptor_sets.data() );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not allocate descriptor sets."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>不幸的是,当我们分配和释放separate descriptor sets时,池的内存可能会变得fragmented(支离破碎).此时即使还没到上限也不能申请新的sets了.如下</p>
+<p><img src="media/descriptorsetspool.png" alt></p>
+<p>第一次allocate descriptors sets,fragmentation问题不会发生</p>
+<p>另外,如果每个descritor sets使用相同类型相同数量的资源也不会产生这个问题.</p>
+<p>为了避免这个问题,需要释放一次释放所有descriptor sets,否则,只能创建一个新的pool.</p>
+<h3 id="updating-descriptor-sets"><a href="#updating-descriptor-sets" class="headerlink" title="updating descriptor sets"></a>updating descriptor sets</h3><p>现在想提供特定的资源(samplers,image views,buffers,buffer views)(之后通过descriptor sets绑定到pipeline).定义应该使用的资源是通过update descriptor sets的过程来完成的.</p>
+<p>一些自定义结构</p>
+<p>samplers</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ImageDescriptorInfo</span> &#123;</span></span><br><span class="line">    VkDescriptorSet TargetDescriptorSet;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetDescriptorBinding;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetArrayElement;</span><br><span class="line">    VkDescriptorType TargetDescriptorType;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDescriptorImageInfo&gt; ImageInfos;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>uniform 和 storage buffers</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">BufferDescriptorInfo</span> &#123;</span></span><br><span class="line">    VkDescriptorSet TargetDescriptorSet;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetDescriptorBinding;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetArrayElement;</span><br><span class="line">    VkDescriptorType TargetDescriptorType;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDescriptorBufferInfo&gt; BufferInfos;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>uniform and storage texel buffer</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">TexelBufferDescriptorInfo</span> &#123;</span></span><br><span class="line">    VkDescriptorSet TargetDescriptorSet;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetDescriptorBinding;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetArrayElement;</span><br><span class="line">    VkDescriptorType TargetDescriptorType;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkBufferView&gt; TexelBufferViews;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>可以从另一个descriptor拷贝.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">CopyDescriptorInfo</span> &#123;</span></span><br><span class="line">    VkDescriptorSet TargetDescriptorSet;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetDescriptorBinding;</span><br><span class="line">    <span class="keyword">uint32_t</span> TargetArrayElement;</span><br><span class="line">    VkDescriptorSet SourceDescriptorSet;</span><br><span class="line">    <span class="keyword">uint32_t</span> SourceDescriptorBinding;</span><br><span class="line">    <span class="keyword">uint32_t</span> SourceArrayElement;</span><br><span class="line">    <span class="keyword">uint32_t</span> DescriptorCount;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>前面所有的结构都定义了应该更新的descriptor set的句柄、给定集内描述符的索引以及数组中的索引如果要更新的话.通过数组访问的描述符.其余参数是特定于类型的.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkWriteDescriptorSet&gt; write_descriptors;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; image_descriptor : image_descriptor_infos ) &#123;</span><br><span class="line">    write_descriptors.push_back( &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    image_descriptor.TargetDescriptorSet,</span><br><span class="line">    image_descriptor.TargetDescriptorBinding,</span><br><span class="line">    image_descriptor.TargetArrayElement,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(image_descriptor.ImageInfos.size()),</span><br><span class="line">    image_descriptor.TargetDescriptorType,</span><br><span class="line">    image_descriptor.ImageInfos.data(),</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="literal">nullptr</span></span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; buffer_descriptor : buffer_descriptor_infos ) &#123;</span><br><span class="line">    write_descriptors.push_back( &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    buffer_descriptor.TargetDescriptorSet,</span><br><span class="line">    buffer_descriptor.TargetDescriptorBinding,</span><br><span class="line">    buffer_descriptor.TargetArrayElement,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(buffer_descriptor.BufferInfos.size()),</span><br><span class="line">    buffer_descriptor.TargetDescriptorType,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    buffer_descriptor.BufferInfos.data(),</span><br><span class="line">    <span class="literal">nullptr</span></span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; texel_buffer_descriptor : texel_buffer_descriptor_infos ) &#123;</span><br><span class="line">    write_descriptors.push_back( &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    texel_buffer_descriptor.TargetDescriptorSet,</span><br><span class="line">    texel_buffer_descriptor.TargetDescriptorBinding,</span><br><span class="line">    texel_buffer_descriptor.TargetArrayElement,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(texel_buffer_descriptor.TexelBufferViews.size()),</span><br><span class="line">    texel_buffer_descriptor.TargetDescriptorType,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    texel_buffer_descriptor.TexelBufferViews.data()</span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也能复用其他sets的descriptor,更快.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;VkCopyDescriptorSet&gt; copy_descriptors;</span><br><span class="line">for( auto &amp; copy_descriptor : copy_descriptor_infos ) &#123;</span><br><span class="line">    copy_descriptors.push_back( &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET,</span><br><span class="line">    nullptr,</span><br><span class="line">    copy_descriptor.SourceDescriptorSet,</span><br><span class="line">    copy_descriptor.SourceDescriptorBinding,</span><br><span class="line">    copy_descriptor.SourceArrayElement,</span><br><span class="line">    copy_descriptor.TargetDescriptorSet,</span><br><span class="line">    copy_descriptor.TargetDescriptorBinding,</span><br><span class="line">    copy_descriptor.TargetArrayElement,</span><br><span class="line">    copy_descriptor.DescriptorCount</span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>update descriptor sets</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vkUpdateDescriptorSets( logical_device,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(write_descriptors.size()), write_descriptors.data(),</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(copy_descriptors.size()), copy_descriptors.data() );</span><br></pre></td></tr></table></figure>
+<h3 id="binding-descriptor-sets"><a href="#binding-descriptor-sets" class="headerlink" title="binding descriptor sets"></a>binding descriptor sets</h3><p>创建好descriptor set后,需要在recording 操作中将之绑定到cb.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">VkCommandBuffer command_buffer;</span><br><span class="line">VkPipelineLayout pipeline_layout;</span><br><span class="line">td::<span class="built_in">vector</span>&lt;VkDescriptorSet&gt; descriptor_sets;</span><br><span class="line"><span class="keyword">uint32_t</span> index_for_first_set;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">uint32_t</span>&gt; dynamic_offsets;</span><br><span class="line">vkCmdBindDescriptorSets( command_buffer, pipeline_type,</span><br><span class="line">pipeline_layout, index_for_first_set, <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;</span><br><span class="line">(descriptor_sets.size()), descriptor_sets.data(),</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(dynamic_offsets.size()),</span><br><span class="line">dynamic_offsets.data() )</span><br></pre></td></tr></table></figure>
+<p>当我们record a command buffer,它的state是未定义的额.在record 与image 或 buffer资源相关的drawing操作前,我们需要给cb绑定合适的resources.通过vkCmdBindDescriptorSets()绑定descriptor sets实现的.</p>
+<h3 id="create-descriptors-with-a-texture-and-a-uniform-buffer"><a href="#create-descriptors-with-a-texture-and-a-uniform-buffer" class="headerlink" title="create descriptors with a texture and a uniform buffer"></a>create descriptors with a texture and a uniform buffer</h3><p>创建a combined image sampler和a uniform buffer为descriptors创建做准备</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateCombinedImageSampler( physical_device, logical_device,</span><br><span class="line">VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, sampled_image_size, <span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">VK_IMAGE_USAGE_TRANSFER_DST_BIT,</span><br><span class="line">VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_ASPECT_COLOR_BIT, VK_FILTER_LINEAR,</span><br><span class="line">VK_FILTER_LINEAR, VK_SAMPLER_MIPMAP_MODE_NEAREST,</span><br><span class="line">VK_SAMPLER_ADDRESS_MODE_REPEAT,</span><br><span class="line">VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_ADDRESS_MODE_REPEAT, <span class="number">0.0f</span>,</span><br><span class="line"><span class="literal">false</span>, <span class="number">1.0f</span>, <span class="literal">false</span>, VK_COMPARE_OP_ALWAYS, <span class="number">0.0f</span>, <span class="number">0.0f</span>,</span><br><span class="line">VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, <span class="literal">false</span>,</span><br><span class="line">sampler, sampled_image, sampled_image_memory_object, sampled_image_view )</span><br><span class="line">) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !CreateUniformBuffer( physical_device, logical_device,</span><br><span class="line">uniform_buffer_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, uniform_buffer,</span><br><span class="line">uniform_buffer_memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后准备定义descriptor set核心结构的layout</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkDescriptorSetLayoutBinding&gt; bindings = &#123;</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,</span><br><span class="line">    <span class="number">1</span>,</span><br><span class="line">    VK_SHADER_STAGE_FRAGMENT_BIT,</span><br><span class="line">    <span class="literal">nullptr</span></span><br><span class="line">&#125;,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">1</span>,</span><br><span class="line">    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,</span><br><span class="line">    <span class="number">1</span>,</span><br><span class="line">    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,</span><br><span class="line">    <span class="literal">nullptr</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">if</span>( !CreateDescriptorSetLayout( logical_device, bindings,</span><br><span class="line">descriptor_set_layout ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>组后,用一开始创建的resources更新descriptor set</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;ImageDescriptorInfo&gt; image_descriptor_infos = &#123;</span><br><span class="line">&#123;</span><br><span class="line">    descriptor_sets[<span class="number">0</span>],</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,</span><br><span class="line">    &#123;</span><br><span class="line">   		&#123;</span><br><span class="line">            sampler,</span><br><span class="line">            sampled_image_view,</span><br><span class="line">            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</span><br><span class="line">    	&#125;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;BufferDescriptorInfo&gt; buffer_descriptor_infos = &#123;</span><br><span class="line">&#123;</span><br><span class="line">    descriptor_sets[<span class="number">0</span>],</span><br><span class="line">        <span class="number">1</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,</span><br><span class="line">        &#123;</span><br><span class="line">            &#123;</span><br><span class="line">                uniform_buffer,</span><br><span class="line">                <span class="number">0</span>,</span><br><span class="line">                VK_WHOLE_SIZE</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">UpdateDescriptorSets( logical_device, image_descriptor_infos,</span><br><span class="line">buffer_descriptor_infos, &#123;&#125;, &#123;&#125; );</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h2 id="destroy"><a href="#destroy" class="headerlink" title="destroy"></a>destroy</h2><h3 id="free-descriptor-sets"><a href="#free-descriptor-sets" class="headerlink" title="free descriptor sets"></a>free descriptor sets</h3><p>如果向将descriptor set的内存归还给pool，可以free它.归还后可以用来创建另一个,但是可能会由于Pool内存的碎片化导致失败.</p>
+<p>能够一次释放多个descriptor sets,(来自同一个pool的)</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkFreeDescriptorSets( logical_device, descriptor_pool,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(descriptor_sets.size()), descriptor_sets.data() );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during freeing descriptor sets."</span> &lt;&lt;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">descriptor_sets.clear();</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="reset-a-descriptor-pool"><a href="#reset-a-descriptor-pool" class="headerlink" title="reset a descriptor pool"></a>reset a descriptor pool</h3><p>能够一次释放一个pool的所有descriptor sets.</p>
+<p>如果pool创建flag没有VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,该方法是唯一释放其descriptor sets的方法.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkResetDescriptorPool( logical_device, descriptor_pool, <span class="number">0</span></span><br><span class="line">);</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Error occurred during descriptor pool reset."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="destroy-a-descriptor-pool"><a href="#destroy-a-descriptor-pool" class="headerlink" title="destroy a descriptor pool"></a>destroy a descriptor pool</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != descriptor_pool ) &#123;</span><br><span class="line">    vkDestroyDescriptorPool( logical_device, descriptor_pool, <span class="literal">nullptr</span> );</span><br><span class="line">    descriptor_pool = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="destroy-a-descriptor-set-layout"><a href="#destroy-a-descriptor-set-layout" class="headerlink" title="destroy a descriptor set layout"></a>destroy a descriptor set layout</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != descriptor_set_layout ) &#123;</span><br><span class="line">	vkDestroyDescriptorSetLayout( logical_device, descriptor_set_layout,</span><br><span class="line"><span class="literal">nullptr</span> );</span><br><span class="line">	descriptor_set_layout = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="destroy-a-sampler"><a href="#destroy-a-sampler" class="headerlink" title="destroy a sampler"></a>destroy a sampler</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != sampler ) &#123;</span><br><span class="line">    vkDestroySampler( logical_device, sampler, <span class="literal">nullptr</span> );</span><br><span class="line">    sampler = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/" rel="next" title="Resources and Memory">
+                <i class="fa fa-chevron-left"></i> Resources and Memory
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/基础知识/" rel="prev" title="基础知识">
+                基础知识 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Descriptor-Sets"><span class="nav-number">1.</span> <span class="nav-text">Descriptor Sets</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#sampler"><span class="nav-number">1.1.</span> <span class="nav-text">sampler</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-sampler"><span class="nav-number">1.1.1.</span> <span class="nav-text">create a sampler</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-sampled-image"><span class="nav-number">1.1.2.</span> <span class="nav-text">create a sampled image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-combined-image-sampler"><span class="nav-number">1.1.3.</span> <span class="nav-text">create a combined image sampler</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#storage"><span class="nav-number">1.2.</span> <span class="nav-text">storage</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-storage-image"><span class="nav-number">1.2.1.</span> <span class="nav-text">create a storage image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-uniform-texel-buffer"><span class="nav-number">1.2.2.</span> <span class="nav-text">create uniform texel buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-torage-texel-buffer"><span class="nav-number">1.2.3.</span> <span class="nav-text">create a torage texel buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-an-input-attachment"><span class="nav-number">1.2.4.</span> <span class="nav-text">create an input attachment</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#descriptor"><span class="nav-number">1.3.</span> <span class="nav-text">descriptor</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-descriptor-set-layout"><span class="nav-number">1.3.1.</span> <span class="nav-text">create a descriptor set layout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#createa-a-descriptor-pool"><span class="nav-number">1.3.2.</span> <span class="nav-text">createa a descriptor pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#allocating-descriptor-sets"><span class="nav-number">1.3.3.</span> <span class="nav-text">allocating descriptor sets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#updating-descriptor-sets"><span class="nav-number">1.3.4.</span> <span class="nav-text">updating descriptor sets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#binding-descriptor-sets"><span class="nav-number">1.3.5.</span> <span class="nav-text">binding descriptor sets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-descriptors-with-a-texture-and-a-uniform-buffer"><span class="nav-number">1.3.6.</span> <span class="nav-text">create descriptors with a texture and a uniform buffer</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#destroy"><span class="nav-number">1.4.</span> <span class="nav-text">destroy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#free-descriptor-sets"><span class="nav-number">1.4.1.</span> <span class="nav-text">free descriptor sets</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#reset-a-descriptor-pool"><span class="nav-number">1.4.2.</span> <span class="nav-text">reset a descriptor pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#destroy-a-descriptor-pool"><span class="nav-number">1.4.3.</span> <span class="nav-text">destroy a descriptor pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#destroy-a-descriptor-set-layout"><span class="nav-number">1.4.4.</span> <span class="nav-text">destroy a descriptor set layout</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#destroy-a-sampler"><span class="nav-number">1.4.5.</span> <span class="nav-text">destroy a sampler</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

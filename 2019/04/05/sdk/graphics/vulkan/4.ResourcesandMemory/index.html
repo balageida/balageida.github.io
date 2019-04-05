@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="en">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=7.0.1">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.0.1">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.0.1">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=7.0.1" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.0.1',
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false,"dimmer":false},
+    back2top: true,
+    back2top_sidebar: false,
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Resources and Memory[TOC] 内容Creating a bufferAllocating and binding a memory object for a bufferSetting a buffer memory barrierCreating a buffer viewCreating an imageAllocating and binding a memory o">
+<meta name="keywords" content="vulkan">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Resources and Memory">
+<meta property="og:url" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/index.html">
+<meta property="og:site_name" content="Stoner">
+<meta property="og:description" content="Resources and Memory[TOC] 内容Creating a bufferAllocating and binding a memory object for a bufferSetting a buffer memory barrierCreating a buffer viewCreating an imageAllocating and binding a memory o">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/media/imageoptionaltiling.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/media/imagebarrier.png">
+<meta property="og:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/media/imagepipelinestages.png">
+<meta property="og:updated_time" content="2019-04-05T13:19:35.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Resources and Memory">
+<meta name="twitter:description" content="Resources and Memory[TOC] 内容Creating a bufferAllocating and binding a memory object for a bufferSetting a buffer memory barrierCreating a buffer viewCreating an imageAllocating and binding a memory o">
+<meta name="twitter:image" content="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/media/imageoptionaltiling.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Resources and Memory | Stoner</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Stoner</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">做此刻最想做的事</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-tags">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-categories">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://noleafnolife.com/2019/04/05/sdk/graphics/vulkan/4.ResourcesandMemory/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="nolife">
+      <meta itemprop="description" content="一个游戏程序员的blog">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Stoner">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Resources and Memory
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-04-05 21:16:00 / Modified: 21:19:35" itemprop="dateCreated datePublished" datetime="2019-04-05T21:16:00+08:00">2019-04-05</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/" itemprop="url" rel="index"><span itemprop="name">sdk</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/" itemprop="url" rel="index"><span itemprop="name">graphics</span></a></span>
+
+                
+                
+                  , 
+                
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/sdk/graphics/vulkan/" itemprop="url" rel="index"><span itemprop="name">vulkan</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <a id="more"></a>
+<h1 id="Resources-and-Memory"><a href="#Resources-and-Memory" class="headerlink" title="Resources and Memory"></a>Resources and Memory</h1><p>[TOC]</p>
+<h2 id="内容"><a href="#内容" class="headerlink" title="内容"></a>内容</h2><p>Creating a buffer<br>Allocating and binding a memory object for a buffer<br>Setting a buffer memory barrier<br>Creating a buffer view<br>Creating an image<br>Allocating and binding a memory object to an image<br>Setting an image memory barrier<br>Creating an image view<br>Creating a 2D image and view<br>Creating a layered 2D image with a CUBEMAP view<br>Mapping, updating, and unmapping host-visible memory<br>Copying data between buffers<br>Copying data from a buffer to an image<br>Copying data from an image to a buffer<br>Using a staging buffer to update a buffer with a device-local memory bound<br>Using a staging buffer to update an image with a device-local memory bound<br>Destroying an image view<br>Destroying an image<br>Destroying a buffer view<br>Freeing a memory object<br>Destroying a buffer</p>
+<p>Vulkan里非常重要的存储数据的资源时buffers和images.buffers存储linear数组数据.Images和OpenGL的textures类似,有1D,2D,3D.Buffers和Images可以用于很多目的:shaders里可以read或者sample数据,或者存储数据.Images可以用于color或者depth/stencil绑定(RT),也就是说可以渲染到其上.Buffer还可以存储顶点数据、indices,parameters(indiret drawing).</p>
+<p>重要的是提及的所有usages需要在创建资源时指明(可以一次提供很多).</p>
+<p>Vulkan里buffers和images没有自己的storage,需要创建和绑定memory objects.</p>
+<p>本节介绍如何使用这些资源、如何申请缓存和绑定、如何上传数据到GPU、如何在资源见进行拷贝.</p>
+<h2 id="buffer"><a href="#buffer" class="headerlink" title="buffer"></a>buffer</h2><h3 id="创建buffer"><a href="#创建buffer" class="headerlink" title="创建buffer"></a>创建buffer</h3><p>buffers能用于很多目的.它们能通过descriptor sets在pipelines中统一uniform buffers、storage buffers、texel buffer等的后备缓冲.它们能作为vertex indices或者attributes的数据源,或者暂存从CPU到GPU移动数据的staging resources.为了这些目的,我们需要创建buffer和指定它的usage.</p>
+<p>buffers只能用于创建时指定的usages.</p>
+<p>buffers支持的使用方式列表</p>
+<table>
+<thead>
+<tr>
+<th>flag</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VK_BUFFER_USAGE_TRANSFER_SRC_BIT</td>
+<td>specifies that the buffer can be a source of data for copy operations</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_TRANSFER_DST_BIT</td>
+<td>specifies that we can copy data to the  buffer</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT</td>
+<td>indicates that the buffer can be used in shaders as a uniform texel buffer</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT</td>
+<td>specifies that the buffer can be used in shaders as a storage texel buffer</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT</td>
+<td>indicates that the buffer can be used in shaders as a source of values for uniform variables</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_STORAGE_BUFFER_BIT</td>
+<td>indicates that we can store data in the buffer from within shaders</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_INDEX_BUFFER_BIT</td>
+<td>specifies that the buffer can be used as a source of vertex indices during drawing</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_VERTEX_BUFFER_BIT</td>
+<td>indicates that the buffer can be a source of data for vertex attributes specified during drawing</td>
+</tr>
+<tr>
+<td>VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT</td>
+<td>indicates that the buffer can contain data that will be used during indirect drawing</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">VkBufferCreateInfo buffer_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    size,</span><br><span class="line">    usage,</span><br><span class="line">    VK_SHARING_MODE_EXCLUSIVE,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="literal">nullptr</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>之前的VK_SHARING_MODE_EXCLUSIVE(sharingMode)是一个非常重要的参数.通过它我们能指定多families里的queues能否同时访问buffer.Exclusive shaing mode(独占)告诉驱动程序缓冲区只能由一个系列中的队列一次引用.如果想从另一个family提交的commands使用buffer,必须在所有者改变时明确告诉驱动(从一个family改为另一个).这样性能更好但也更麻烦.</p>
+<p>我们也可以指明VK_SHARING_MODE_CONCURRENT,这样多families多queues能够同时访问一个buffer，并且不用进行所有者转换,但并发性能可能很低.</p>
+<p>创建buffer</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateBuffer( logical_device, &amp;buffer_create_info,</span><br><span class="line"><span class="literal">nullptr</span>, &amp;buffer );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create a buffer."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="allocating-and-binding-a-memory-object-for-a-buffer"><a href="#allocating-and-binding-a-memory-object-for-a-buffer" class="headerlink" title="allocating and binding a memory object for a buffer"></a>allocating and binding a memory object for a buffer</h3><p>Vulkan里buffers和images没有自己的memroy,需要allocate memory object并绑定.</p>
+<p>关于内存管理</p>
+<p> <a href="https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator" target="_blank" rel="noopener">https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator</a></p>
+<p><a href="https://www.youtube.com/watch?v=rXSdDE7NWmA" target="_blank" rel="noopener">https://www.youtube.com/watch?v=rXSdDE7NWmA</a></p>
+<h4 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h4><p>1.take VkPhysicalDevice physical_device</p>
+<p>2.create VkPhysicalDeviceMemoryProperties physical_device_memory_properties</p>
+<p>3.clall vkGetPhysicalDeviceMemoryProperties( physical_device,&amp;physical_device_memory_properties )会存储内存相关参数(heaps的数量,大小,types)</p>
+<p>4.take VkDevice logical_device</p>
+<p>5.take VkBuffer buffer</p>
+<p>6.create VkMemoryRequirements memory_requirements.</p>
+<p>7.call vkGetBufferMemoryRequirements(logical_device, buffer,&amp;memory_requirements);</p>
+<p>8.create VkDeviceMemory memory_object = VK_NULL_HANDLE;</p>
+<p>9.create VkMemoryPropertyFlagBits memory_properties</p>
+<p>10.遍历physical device的physical_device_memory_properties的内存types,每次循环进行如下操作:</p>
+<blockquote>
+<p>1.确保memory_requirements.memoryTypeBits 设置了</p>
+<p>2.确保memory_properties变量的位设置与memory type的propertyflags成员相同,该成员位于物理_device_memory_properties变量中memorytypes数组的索引类型.</p>
+<p>3.如果1、2为false,continue</p>
+<p>4.创建VkMemoryAllocateInfo buffer_memory_allocate_info</p>
+<p>.allocationSize = memory_requirements.size,</p>
+<p>.memoryTypeIndex = type</p>
+<p>5.vkAllocateMemory( logical_device,&amp;buffer_memory_allocate_info, nullptr, &amp;memory_object)</p>
+<p>6.确认结果为VK_SUCCESS</p>
+</blockquote>
+<p>11.确保allocate的memory object成功</p>
+<p>12.绑定,call vkBindBufferMemory(logical_device, buffer, memory_object, 0 )</p>
+<p>13.确保call成功</p>
+<p>为了给buffer allocate a memory,需要知道可用的memory types(physical device)以及有多少.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VkPhysicalDeviceMemoryProperties physical_device_memory_properties;</span><br><span class="line">vkGetPhysicalDeviceMemoryProperties( physical_device,</span><br><span class="line">&amp;physical_device_memory_properties );</span><br></pre></td></tr></table></figure>
+<p>接下来,我们需要知道给定缓冲区需要多少存储(缓冲区的内存可能需要大于缓冲区的大小),以及与之兼容的内存类型.这些信息存储在VkMemoryRequirements:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VkMemoryRequirements memory_requirements;</span><br><span class="line">vkGetBufferMemoryRequirements(logical_device, buffer, &amp;memory_requirements);</span><br></pre></td></tr></table></figure>
+<p>接下来,我们需要检查哪个内存类型对应于缓冲区的内存需求:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">memory_object = VK_NULL_HANDLE;</span><br><span class="line">for( uint32_t type = 0; type &lt; physical_device_memory_properties.memoryTypeCount; ++type ) </span><br><span class="line">&#123;</span><br><span class="line">    if( (memory_requirements.memoryTypeBits &amp; (1 &lt;&lt; type)) &amp;&amp;</span><br><span class="line">    ((physical_device_memory_properties.memoryTypes[type].propertyFlags &amp;</span><br><span class="line">    memory_properties) == memory_properties) ) </span><br><span class="line">    &#123;</span><br><span class="line">        VkMemoryAllocateInfo buffer_memory_allocate_info = </span><br><span class="line">        &#123;</span><br><span class="line">            VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,</span><br><span class="line">            nullptr,</span><br><span class="line">            memory_requirements.size,</span><br><span class="line">            type</span><br><span class="line">        &#125;;</span><br><span class="line">        VkResult result = vkAllocateMemory( logical_device,</span><br><span class="line">        &amp;buffer_memory_allocate_info, nullptr, &amp;memory_object );</span><br><span class="line">        if( VK_SUCCESS == result ) </span><br><span class="line">        &#123;</span><br><span class="line">      	  break;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里遍历所有可用memory types以检查是否能够用于我们的buffer,我们也能检查一些额外的属性,比如如果想直接从CPU上传数据到GPU，memory mapping必须支持.这种情况下,我们需要使用的memory type为host-visible.</p>
+<p>当我们找到合适的memory type后,我们能用它allocate memory object并break,然后可以绑定了:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE == memory_object ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not allocate memory for a buffer."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkResult result = vkBindBufferMemory( logical_device, buffer,</span><br><span class="line">memory_object, <span class="number">0</span> );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not bind memory object to a buffer."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>绑定时,指定了offset等其他参数.这个参数在内存管理里很有用.</p>
+<p>通常来说,不会为每个buffer使用一个分开的memory object.而是allocate很大的memory objects,多个buffers各使用其一部分.在这种方式中,我们通过call vkGetPhysicalDeviceMemoryProperties来获取物理设备的可用内存类型.但通常来说,为了提高app的性能,不会每次需要allocate memory object的时候都调用它.我们只需要调用一次,在我们选择一个physical device后可以使用存储的参数.</p>
+<h3 id="set-a-buffer-memory-barrier"><a href="#set-a-buffer-memory-barrier" class="headerlink" title="set a buffer memory barrier"></a>set a buffer memory barrier</h3><p>我们必须通知一个驱动程序每一个这样的使用,不仅在缓冲区创建期间,而且在预期的使用之前.当我们出于一个目的使用缓冲区,并且从现在开始我们想以不同的方式使用它时,我们必须告诉驱动程序缓冲区的使用发生了变化.这是通过缓冲存储器屏障(barrier)实现的.在cb record时,它们作为pipeline barriers的一部分.</p>
+<p>自定义一个结构体</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">BufferTransition</span> &#123;</span></span><br><span class="line">    VkBuffer Buffer;</span><br><span class="line">    <span class="comment">//VkAccessFlags buffer如何使用</span></span><br><span class="line">    VkAccessFlags CurrentAccess;</span><br><span class="line">    VkAccessFlags NewAccess;</span><br><span class="line">    <span class="comment">//用于想将buffer用于不同families的queue时(exclusive sharing mode时用到)</span></span><br><span class="line">    <span class="keyword">uint32_t</span> CurrentQueueFamily;</span><br><span class="line">    <span class="keyword">uint32_t</span> NewQueueFamily;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在Vulkan里,提交给queues的opoerations是按顺序执行的,但也是独立的.有时有些操作需要等待其他操作结束后才能执行,这时候memory barriers就有用了.</p>
+<p>memory barriers用于定义命令缓冲区执行中的时刻,在这些时刻中,后面的命令应该等待前面的命令完成它们的工作.它们还使这些操作的结果对其他操作可见。</p>
+<h2 id="image"><a href="#image" class="headerlink" title="image"></a>image</h2><p>使用目的</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</td>
+<td>specifies that the image can be used as a source of data for copy operations</td>
+</tr>
+<tr>
+<td>VK_IMAGE_USAGE_TRANSFER_DST_BIT</td>
+<td>specifies that we can copy data to the image</td>
+</tr>
+<tr>
+<td>VK_IMAGE_USAGE_SAMPLED_BIT</td>
+<td>indicates that we can sample data from the image inside shaders</td>
+</tr>
+<tr>
+<td>VK_IMAGE_USAGE_STORAGE_BIT</td>
+<td>specifies that the image can be used as a storage image inside shaders</td>
+</tr>
+<tr>
+<td>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</td>
+<td>specifies that we can render into an image (use it as a color render target/attachment in a framebuffer)</td>
+</tr>
+<tr>
+<td>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</td>
+<td>indicates that the image can be used as a depth and/or stencil buffer (as a depth render target/attachment</td>
+</tr>
+</tbody>
+</table>
+<p>in a framebuffer) |<br>| VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT     | indicates that the memory bound to the image will be allocated lazily (on demand) |<br>| VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT         | specifies that the image can be used as an input attachment inside shaders |</p>
+<p> 不同的usage情景要求使用不同的image layout,通过使用image memory barriers进行改变,我们需需要指明VK_IMAGE_LAYOUT_UNDEFINED,如果不在意初始化内容,或者VK_IMAGE_LAYOUT_PREINITIALIZED如果想通过mapping host-visible memory上传数据.在使用前总需要transition to another layout.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">VkImageCreateInfo image_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    cubemap ? VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT : <span class="number">0u</span>,</span><br><span class="line">    type,</span><br><span class="line">    format,</span><br><span class="line">    size,</span><br><span class="line">    num_mipmaps,</span><br><span class="line">    cubemap ? <span class="number">6</span> * num_layers : num_layers,</span><br><span class="line">    samples,</span><br><span class="line">    VK_IMAGE_TILING_OPTIMAL,</span><br><span class="line">    usage_scenarios,</span><br><span class="line">    VK_SHARING_MODE_EXCLUSIVE,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    VK_IMAGE_LAYOUT_UNDEFINED</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>创建Image时需要指明tiling</p>
+<blockquote>
+<ul>
+<li>linear tiling:在memory中线性存储,这允许我们映射图像的内存并直接从应用程序读取或初始化它,因为我们知道内存是如何组织的.但对使用目的有严格显示,比如不能作为depth texture或cubemap.会降低性能</li>
+<li>optimal tiling:能用于所有目的,性能更好,作为代价不知道image得memory如何组织.</li>
+</ul>
+</blockquote>
+<p><img src="media/imageoptionaltiling.png" alt></p>
+<p>不同硬件存储image数据方式不同.所以不能在app中直接mapping、初始化、读image的内存.此时,可以使用staging resources.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateImage( logical_device, &amp;image_create_info,</span><br><span class="line"><span class="literal">nullptr</span>, &amp;image );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create an image."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="allocating-and-binding-a-memory-object-to-an-image"><a href="#allocating-and-binding-a-memory-object-to-an-image" class="headerlink" title="allocating and binding a memory object to an image"></a>allocating and binding a memory object to an image</h3><p>vkGetImageMemoryRequirements</p>
+<p>vkBindImageMemory</p>
+<p>先检查可用的memory types.</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">VkPhysicalDeviceMemoryProperties physical_device_memory_properties;</span><br><span class="line">vkGetPhysicalDeviceMemoryProperties( physical_device,</span><br><span class="line">&amp;physical_device_memory_properties );</span><br></pre></td></tr></table></figure>
+<p>然后给image请求指定的memory requirememts.每个image可能不同,与format,size,mipmaps和layers的数量和其他属性有关.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">VkMemoryRequirements memory_requirements;</span><br><span class="line">vkGetImageMemoryRequirements( logical_device, image, &amp;memory_requirements);</span><br></pre></td></tr></table></figure>
+<p>下一步是找到与image的memory requirements适配的memory type</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">memory_object = VK_NULL_HANDLE;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">uint32_t</span> type = <span class="number">0</span>; type &lt;physical_device_memory_properties.memoryTypeCount; ++type ) &#123;</span><br><span class="line">    <span class="keyword">if</span>( (memory_requirements.memoryTypeBits &amp; (<span class="number">1</span> &lt;&lt; type)) &amp;&amp;</span><br><span class="line">    ((physical_device_memory_properties.memoryTypes[type].propertyFlags &amp;</span><br><span class="line">    memory_properties) == memory_properties) ) &#123;</span><br><span class="line">        VkMemoryAllocateInfo image_memory_allocate_info = &#123;</span><br><span class="line">        VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,</span><br><span class="line">        <span class="literal">nullptr</span>,</span><br><span class="line">        memory_requirements.size,</span><br><span class="line">        type</span><br><span class="line">    &#125;;</span><br><span class="line">    VkResult result = vkAllocateMemory( logical_device,</span><br><span class="line">    &amp;image_memory_allocate_info, <span class="literal">nullptr</span>, &amp;memory_object );</span><br><span class="line">    <span class="keyword">if</span>( VK_SUCCESS == result ) &#123;</span><br><span class="line">    <span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE == memory_object ) &#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not allocate memory for an image."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkResult result = vkBindImageMemory( logical_device, image, memory_object,</span><br><span class="line"><span class="number">0</span> );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not bind memory object to an image."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>申请大内存共享,可以提高性能,可以减少memory浪费.</p>
+<h3 id="setting-an-image-memory-barrier"><a href="#setting-an-image-memory-barrier" class="headerlink" title="setting an image memory barrier"></a>setting an image memory barrier</h3><p>image 用于texture,RT(通过descriptor sets),swapchain的images.拷贝(目标或源)</p>
+<p>定义一个结构体</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ImageTransition</span> &#123;</span></span><br><span class="line">    VkImage Image;</span><br><span class="line">    <span class="comment">//</span></span><br><span class="line">    VkAccessFlags CurrentAccess;</span><br><span class="line">    VkAccessFlags NewAccess;</span><br><span class="line">    <span class="comment">//不用image usages有不用的layout,所以改变目的时需要确保</span></span><br><span class="line">    VkImageLayout CurrentLayout;</span><br><span class="line">    VkImageLayout NewLayout;</span><br><span class="line">    <span class="keyword">uint32_t</span> CurrentQueueFamily;</span><br><span class="line">    <span class="keyword">uint32_t</span> NewQueueFamily;</span><br><span class="line">    VkImageAspectFlags Aspect;<span class="comment">//usage.color,depth,stencil</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>在我们不想改变ownerships时我们能使用VK_QUEUE_FAMILY_IGNORED.</p>
+<p>内存屏障用于定义命令缓冲区执行中的时刻,在这些时刻中,后面的命令应该等待前面的命令完成其任务.它们还使这些操作的结果对其他操作可见.</p>
+<p>Barriers用于让后续commands 的memory操作可见</p>
+<p><img src="media/imagebarrier.png" alt></p>
+<p>为了性能,最好给特定的usages用image memory layout,尽管需要注意频繁转换用处的layout.</p>
+<p>VkImageMemoryBarrier</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkImageMemoryBarrier&gt; image_memory_barriers;</span><br><span class="line"><span class="keyword">for</span>( <span class="keyword">auto</span> &amp; image_transition : image_transitions ) &#123;</span><br><span class="line">    image_memory_barriers.push_back( &#123;</span><br><span class="line">        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,</span><br><span class="line">        <span class="literal">nullptr</span>,</span><br><span class="line">        image_transition.CurrentAccess,</span><br><span class="line">        image_transition.NewAccess,</span><br><span class="line">        image_transition.CurrentLayout,</span><br><span class="line">        image_transition.NewLayout,</span><br><span class="line">        image_transition.CurrentQueueFamily,</span><br><span class="line">        image_transition.NewQueueFamily,</span><br><span class="line">        image_transition.Image,</span><br><span class="line">        &#123;</span><br><span class="line">        image_transition.Aspect,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_REMAINING_MIP_LEVELS,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_REMAINING_ARRAY_LAYERS</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要定义pipeline stages</p>
+<p><img src="media/imagepipelinestages.png" alt></p>
+<p>左侧vertex等待fragment结束</p>
+<p>右侧fragment等待vertex结束,减少barrier数量很重要,如果需要以正确设置绘图命令并为屏障选择适当的pipeline stages</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( image_memory_barriers.size() &gt; <span class="number">0</span> ) &#123;</span><br><span class="line">    vkCmdPipelineBarrier( command_buffer, generating_stages,</span><br><span class="line">    consuming_stages, <span class="number">0</span>, <span class="number">0</span>, <span class="literal">nullptr</span>, <span class="number">0</span>, <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(image_memory_barriers.size()),</span><br><span class="line">    &amp;image_memory_barriers[<span class="number">0</span>] );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果多次使用于同样的目的,不需要重复设置barrier.这个设置是在改变时设置,而非usage.</p>
+<h3 id="create-an-image-view"><a href="#create-an-image-view" class="headerlink" title="create an image view"></a>create an image view</h3><p>Images在Vulkan Commands中被直接使用,Framebuffer和shaders(通过descriptor sets)通过image views访问images.Images view定义了image的内存的选定部分和指明了读取image数据的额外的信息.</p>
+<p>VkImageViewCreateInfo<br>VkImageView</p>
+<p>image view定义了用于访问image的额外的数据,通过它我们能指明commands能够访问的image的部分.比如,如果渲染到image,可以指明就一个mipmap level需要更新.</p>
+<p>Image view也定义了image内存如何解释.一个好的例子是multiple layers.对于它,我们可以定义一个image view来解释image,作为一个layered image,或者我们可以使用image view从中创建一个cubemap映射。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">VkImageViewCreateInfo image_view_create_info = &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    <span class="number">0</span>,</span><br><span class="line">    image,</span><br><span class="line">    view_type,</span><br><span class="line">    format,</span><br><span class="line">    &#123;</span><br><span class="line">        VK_COMPONENT_SWIZZLE_IDENTITY,</span><br><span class="line">        VK_COMPONENT_SWIZZLE_IDENTITY,</span><br><span class="line">        VK_COMPONENT_SWIZZLE_IDENTITY,</span><br><span class="line">        VK_COMPONENT_SWIZZLE_IDENTITY</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">        aspect,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_REMAINING_MIP_LEVELS,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        VK_REMAINING_ARRAY_LAYERS</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>vkCreateImageView</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">VkResult result = vkCreateImageView( logical_device,</span><br><span class="line">&amp;image_view_create_info, <span class="literal">nullptr</span>, &amp;image_view );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not create an image view."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="create-a-2D-image-and-view"><a href="#create-a-2D-image-and-view" class="headerlink" title="create a 2D image and view"></a>create a 2D image and view</h3><p>RGBA 32bits 2D texture最常用.</p>
+<p>分三步</p>
+<blockquote>
+<ul>
+<li>创建一个image</li>
+<li>创建一个memory object(或者使用以存在的)绑定到image</li>
+<li>创建一个image view</li>
+</ul>
+</blockquote>
+<p>需要创建type为 VK_IMAGE_TYPE_2D,format为VK_FORMAT_R8G8B8A8_UNORM的image.其他image的属性依赖于image的size(换句话说,我们从一个已经存在的image文件创建一个textur,需要匹配它的dimensions)、filtering类型(如果想用mipmapping的话)、samples的数量(如果需要multisampled的话)、期望的usage.</p>
+<p>将image创建过程封装在CreateImage里</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImage( logical_device, VK_IMAGE_TYPE_2D, format, &#123; size.width,</span><br><span class="line">size.height, <span class="number">1</span> &#125;, num_mipmaps, num_layers, samples, usage, <span class="literal">false</span>, image ) )</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>将allocate和bind一个memory object封装在AllocateAndBindMemoryObjectToImage</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToImage( physical_device, logical_device,</span><br><span class="line">image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也能使用一个已经创建的memory</p>
+<p>然后创建image view.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImageView( logical_device, image, VK_IMAGE_VIEW_TYPE_2D, format,</span><br><span class="line">aspect, image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="create-a-layered-2D-image-with-a-CUEMAP-view"><a href="#create-a-layered-2D-image-with-a-CUEMAP-view" class="headerlink" title="create a layered 2D image with a CUEMAP view"></a>create a layered 2D image with a CUEMAP view</h3><p>app常用于模拟物体反射环境的CUBEMAPs,不需要创建一个CUBEMAP image,只需要创建一个layered image和通过image view告诉硬件将之视为6个CUBEMAP表面.</p>
+<p>与创建普通image一样,不同之处是CUBEMAP需要6个layres,同时不能每个texel不能使用超过一个sample.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImage( logical_device, VK_IMAGE_TYPE_2D,</span><br><span class="line">    VK_FORMAT_R8G8B8A8_UNORM, &#123; size, size, <span class="number">1</span> &#125;, num_mipmaps, <span class="number">6</span>,</span><br><span class="line">    VK_SAMPLE_COUNT_1_BIT, usage, <span class="literal">true</span>, image ) ) &#123;</span><br><span class="line">    	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>allocate和bind a memory object</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToImage( physical_device, logical_device,</span><br><span class="line">image, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>创建image view,指明CUBEMAP view type</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !CreateImageView( logical_device, image, VK_IMAGE_VIEW_TYPE_CUBE,</span><br><span class="line">VK_FORMAT_R8G8B8A8_UNORM, aspect, image_view ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>faces order +X,-X,+Y,-Y,+Z,-Z</p>
+<h2 id="data"><a href="#data" class="headerlink" title="data"></a>data</h2><h3 id="mapping-updating-and-unmapping-host-visible-memory"><a href="#mapping-updating-and-unmapping-host-visible-memory" class="headerlink" title="mapping,updating and unmapping host-visible memory"></a>mapping,updating and unmapping host-visible memory</h3><p> images和buffers绑定的memory位于显卡硬件(device-local memory),高性能,但不能直接使用,我们需要使用中间的(staging)资源作为GPU(device)-CPU(host)中转.</p>
+<p>staging resources需要host-visible,为了上传数据或者读取数据,需要map it.</p>
+<p>mapping memory是最简单的用于upload data的方式.需要指明需要map的memory的内容(offset,size).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">VkResult result;</span><br><span class="line"><span class="keyword">void</span> * local_pointer;</span><br><span class="line">result = vkMapMemory( logical_device, memory_object, offset, data_size, <span class="number">0</span>,</span><br><span class="line">&amp;local_pointer );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not map memory object."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>mapping给我们一个指针,与标准c++一样使用,不限制是读还是写.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">memcpy</span>( local_pointer, data, data_size );</span><br></pre></td></tr></table></figure>
+<p>当更新了mapped memory range.需要告诉驱动,内存的内容被修改了否则更新的数据不会立刻被其他提交给queues的操作访问.这个过程称为flush.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;VkMappedMemoryRange&gt; memory_ranges = &#123;</span><br><span class="line">    &#123;</span><br><span class="line">    VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE,</span><br><span class="line">    <span class="literal">nullptr</span>,</span><br><span class="line">    memory_object,</span><br><span class="line">    offset,</span><br><span class="line">    data_size</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line">vkFlushMappedMemoryRanges( logical_device,</span><br><span class="line"><span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(memory_ranges.size()), &amp;memory_ranges[<span class="number">0</span>] );</span><br><span class="line"><span class="keyword">if</span>( VK_SUCCESS != result ) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Could not flush mapped memory."</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在使用完映射的memory后,可以unmap.memory mapping不会影响app运行效率.但关闭程序前必须unmap.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( unmap ) &#123;</span><br><span class="line">	vkUnmapMemory( logical_device, memory_object );</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span>( <span class="literal">nullptr</span> != pointer ) &#123;</span><br><span class="line">	*pointer = local_pointer;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="copy-data-between-buffers"><a href="#copy-data-between-buffers" class="headerlink" title="copy data between buffers"></a>copy data between buffers</h3><p>除了mapping,vulkan还支持memory间(包括不同types)进行内存拷贝.</p>
+<p>这类操作需要在command buffer中record.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( regions.size() &gt; <span class="number">0</span> ) &#123;</span><br><span class="line">    vkCmdCopyBuffer( command_buffer, source_buffer, destination_buffer,</span><br><span class="line">    <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(regions.size()), &amp;regions[<span class="number">0</span>] );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>为了最好的性能,渲染阶段用到的资源,需要绑定device-local memory.但我们不能map这类memory.使用vkCmdCopyBuffer,能拷贝数据到另一个host-visible内存.这种memory能直接被app给mapped和updated.</p>
+<p>能被拷贝的memory创建时要有VK_BUFFER_USAGE_TRANSFER_SRC_BIT usage.<br>能拷贝数据的memory创建时需要有VK_BUFFER_USAGE_TRANSFER_DST_BIT usage.</p>
+<p>当想拷贝buffer到另一个buffer,我们需要设置一个memory barrier,告诉硬件从现在开始该buffer的操作需要按照VK_ACCESS_TRANSFER_WRITE_BIT来.当拷贝完后,我们想将之用于特定目的,需要设置另一个memory barrier.</p>
+<h3 id="copy-data-from-a-buffer-to-an-image"><a href="#copy-data-from-a-buffer-to-an-image" class="headerlink" title="copy data from a buffer to an image"></a>copy data from a buffer to an image</h3><p>对于images,能帮到不同memory types的memory objects.但只有host-visible memory能被app直接mapped或updated.当想更新一个device-local memory的image需要从一个buffer进行拷贝.</p>
+<p>拷贝buffer的数据到image通过comman buffer完成.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( regions.size() &gt; <span class="number">0</span> ) &#123;</span><br><span class="line">    vkCmdCopyBufferToImage( command_buffer, source_buffer, destination_image,image_layout, <span class="keyword">static_cast</span>&lt;<span class="keyword">uint32_t</span>&gt;(regions.size()), &amp;regions[<span class="number">0</span>] );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>需要知道image data是如何组织在buffer里的.包括memory offset,length of  the data row,height of data in a buffer.可以给row length和height设置为0,表明是紧密的数据,并与image的尺寸一致.</p>
+<p>image from:VK_BUFFER_USAGE_TRANSFER_SRC_BIT,在transfer之前,image layout需要为VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</p>
+<p>buffer to:VK_BUFFER_USAGE_TRANSFER_DST_BIT</p>
+<p>在从image拷贝数据前,需要设置一个memory barrier,改变image得layout VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.内存方位类型变为VK_ACCESS_TRANSFER_READ_BIT.如果拷贝完后要用于其他目的,需要设置另一个barrier..</p>
+<h2 id="staging-buffer"><a href="#staging-buffer" class="headerlink" title="staging buffer"></a>staging buffer</h2><h3 id="使用staging-buffer更新device-local-memory"><a href="#使用staging-buffer更新device-local-memory" class="headerlink" title="使用staging buffer更新device-local memory"></a>使用staging buffer更新device-local memory</h3><p>staging resources用于更新not host-visible的memory的内容.这种memory不能mapped.需要一个中间buffer(可以mapped和更新),通过它传输数据.</p>
+<p>需要一个能mapped的buffer,可以用池.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">VkBuffer staging_buffer;</span><br><span class="line"><span class="keyword">if</span>( !CreateBuffer( logical_device, data_size,</span><br><span class="line">VK_BUFFER_USAGE_TRANSFER_SRC_BIT, staging_buffer ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkDeviceMemory memory_object;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToBuffer( physical_device, logical_device,</span><br><span class="line">staging_buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后map it和更新内容</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !MapUpdateAndUnmapHostVisibleMemory( logical_device, memory_object, <span class="number">0</span>,</span><br><span class="line">data_size, data, <span class="literal">true</span>, <span class="literal">nullptr</span> ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后开始record command buffer.先给目标buffer设置一个memory barrier,改变它的usage为copy操作的target.staging buffer不需要barrier.当我们map和update buffer的memory,它的内容对其他commands也是可见的.因为导尿管我们开始command buffer recording一个隐性的barrier为host写操作而设置了.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !BeginCommandBufferRecordingOperation( command_buffer,</span><br><span class="line">VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, <span class="literal">nullptr</span> ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">SetBufferMemoryBarrier( command_buffer,</span><br><span class="line">destination_buffer_generating_stages, VK_PIPELINE_STAGE_TRANSFER_BIT, &#123; &#123;</span><br><span class="line">destination_buffer, destination_buffer_current_access,</span><br><span class="line">VK_ACCESS_TRANSFER_WRITE_BIT, VK_QUEUE_FAMILY_IGNORED,</span><br><span class="line">VK_QUEUE_FAMILY_IGNORED &#125; &#125; );</span><br></pre></td></tr></table></figure>
+<p>然后我们能record拷贝操作</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CopyDataBetweenBuffers( command_buffer, staging_buffer, destination_buffer,</span><br><span class="line">&#123; &#123; <span class="number">0</span>, destination_offset, data_size &#125; &#125; );</span><br></pre></td></tr></table></figure>
+<p>之后,需要为target buffer设置另一个barrier.将他的usage改为使用时期望的</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">SetBufferMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,</span><br><span class="line">destination_buffer_consuming_stages, &#123; &#123; destination_buffer,</span><br><span class="line">VK_ACCESS_TRANSFER_WRITE_BIT, destination_buffer_new_access,</span><br><span class="line">VK_QUEUE_FAMILY_IGNORED, VK_QUEUE_FAMILY_IGNORED &#125; &#125; );</span><br><span class="line"><span class="keyword">if</span>( !EndCommandBufferRecordingOperation( command_buffer ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后创建一个fence,并在submit cb到queue时使用</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">VkFence fence;</span><br><span class="line"><span class="keyword">if</span>( !CreateFence( logical_device, <span class="literal">false</span>, fence ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !SubmitCommandBuffersToQueue( <span class="built_in">queue</span>, &#123;&#125;, &#123; command_buffer &#125;,</span><br><span class="line">signal_semaphores, fence ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果不再想使用staging buffer,销毁它.但必须在使用完成之后才能进行.(fence).</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !WaitForFences( logical_device, &#123; fence &#125;, VK_FALSE, <span class="number">500000000</span> ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">DestroyBuffer( logical_device, staging_buffer );</span><br><span class="line">FreeMemoryObject( logical_device, memory_object );</span><br><span class="line"><span class="keyword">return</span> <span class="literal">true</span>;</span><br></pre></td></tr></table></figure>
+<p>真实应用中,通常使用一个池,复用它,而不是动态创建.这样能避免wait fence的时间,也能提高效率</p>
+<h3 id="使用staging-buffer更新device-local-memory-image"><a href="#使用staging-buffer更新device-local-memory-image" class="headerlink" title="使用staging buffer更新device-local memory image"></a>使用staging buffer更新device-local memory image</h3><p>与上面的类似.</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">VkBuffer staging_buffer;</span><br><span class="line"><span class="keyword">if</span>( !CreateBuffer( logical_device, data_size,</span><br><span class="line">VK_BUFFER_USAGE_TRANSFER_SRC_BIT, staging_buffer ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">VkDeviceMemory memory_object;</span><br><span class="line"><span class="keyword">if</span>( !AllocateAndBindMemoryObjectToBuffer( physical_device, logical_device,</span><br><span class="line">staging_buffer, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, memory_object ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">if</span>( !MapUpdateAndUnmapHostVisibleMemory( logical_device, memory_object, <span class="number">0</span>,</span><br><span class="line">data_size, data, <span class="literal">true</span>, <span class="literal">nullptr</span> ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>设置barrier</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( !BeginCommandBufferRecordingOperation( command_buffer,</span><br><span class="line">VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, <span class="literal">nullptr</span> ) ) &#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">&#125;</span><br><span class="line">SetImageMemoryBarrier( command_buffer, destination_image_generating_stages,</span><br><span class="line">VK_PIPELINE_STAGE_TRANSFER_BIT,</span><br><span class="line">&#123;</span><br><span class="line">	&#123;</span><br><span class="line">    destination_image,</span><br><span class="line">    destination_image_current_access,</span><br><span class="line">    VK_ACCESS_TRANSFER_WRITE_BIT,</span><br><span class="line">    destination_image_current_layout,</span><br><span class="line">    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,</span><br><span class="line">    VK_QUEUE_FAMILY_IGNORED,</span><br><span class="line">    VK_QUEUE_FAMILY_IGNORED,</span><br><span class="line">    destination_image_aspect</span><br><span class="line">	&#125; &#125; );</span><br><span class="line">CopyDataFromBufferToImage( command_buffer, staging_buffer,</span><br><span class="line">destination_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,</span><br><span class="line">&#123;</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        <span class="number">0</span>,</span><br><span class="line">        destination_image_subresource,</span><br><span class="line">        destination_image_offset,</span><br><span class="line">        destination_image_size,</span><br><span class="line">    &#125; &#125; );</span><br></pre></td></tr></table></figure>
+<p>再次修改image的usag</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">SetImageMemoryBarrier( command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT,</span><br><span class="line">destination_image_consuming_stages,</span><br><span class="line">&#123;</span><br><span class="line">	&#123;</span><br><span class="line">    destination_image,</span><br><span class="line">    VK_ACCESS_TRANSFER_WRITE_BIT,</span><br><span class="line">    destination_image_new_access,</span><br><span class="line">    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,</span><br><span class="line">    destination_image_new_layout,</span><br><span class="line">    VK_QUEUE_FAMILY_IGNORED,</span><br><span class="line">    VK_QUEUE_FAMILY_IGNORED,</span><br><span class="line">    destination_image_aspect</span><br><span class="line">    &#125; &#125; );</span><br><span class="line">    if( !EndCommandBufferRecordingOperation( command_buffer ) ) &#123;</span><br><span class="line">    	return false;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+<p>fence</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">VkFence fence;</span><br><span class="line">if( !CreateFence( logical_device, false, fence ) ) &#123;</span><br><span class="line">	return false;</span><br><span class="line">&#125;</span><br><span class="line">if( !SubmitCommandBuffersToQueue( queue, &#123;&#125;, &#123; command_buffer &#125;,</span><br><span class="line">signal_semaphores, fence ) ) &#123;</span><br><span class="line">	return false;</span><br><span class="line">&#125;</span><br><span class="line">if( !WaitForFences( logical_device, &#123; fence &#125;, VK_FALSE, 500000000 ) ) &#123;</span><br><span class="line">	return false;</span><br><span class="line">&#125;</span><br><span class="line">DestroyBuffer( logical_device, staging_buffer );</span><br><span class="line">FreeMemoryObject( logical_device, memory_object );</span><br><span class="line">return true;</span><br></pre></td></tr></table></figure>
+<p>如果是用池的话就不需要fence.</p>
+<h2 id="destroy"><a href="#destroy" class="headerlink" title="destroy"></a>destroy</h2><h3 id="销毁iamge-view"><a href="#销毁iamge-view" class="headerlink" title="销毁iamge view"></a>销毁iamge view</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != buffer_view ) &#123;</span><br><span class="line">vkDestroyBufferView( logical_device, buffer_view, <span class="literal">nullptr</span> );</span><br><span class="line">	buffer_view = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="memory-object"><a href="#memory-object" class="headerlink" title="memory object"></a>memory object</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>( VK_NULL_HANDLE != memory_object ) &#123;</span><br><span class="line">vkFreeMemory( logical_device, memory_object, <span class="literal">nullptr</span> );</span><br><span class="line">	memory_object = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="buffer-1"><a href="#buffer-1" class="headerlink" title="buffer"></a>buffer</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if( VK_NULL_HANDLE != buffer ) &#123;</span><br><span class="line">vkDestroyBuffer( logical_device, buffer, nullptr );</span><br><span class="line">	buffer = VK_NULL_HANDLE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/vulkan/" rel="tag"># vulkan</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/8.GraphicsandComputePipelines/" rel="next" title="Graphics and Compute Pipelines">
+                <i class="fa fa-chevron-left"></i> Graphics and Compute Pipelines
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/04/05/sdk/graphics/vulkan/5.DescriptorSets/" rel="prev" title="Descriptor Sets">
+                Descriptor Sets <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">nolife</p>
+              <div class="site-description motion-element" itemprop="description">一个游戏程序员的blog</div>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">17</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                      <a href="/categories/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">6</span>
+                    <span class="site-state-item-name">categories</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                      <a href="/tags/">
+                    
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">2</span>
+                    <span class="site-state-item-name">tags</span>
+                  </a>
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Resources-and-Memory"><span class="nav-number">1.</span> <span class="nav-text">Resources and Memory</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#内容"><span class="nav-number">1.1.</span> <span class="nav-text">内容</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#buffer"><span class="nav-number">1.2.</span> <span class="nav-text">buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建buffer"><span class="nav-number">1.2.1.</span> <span class="nav-text">创建buffer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#allocating-and-binding-a-memory-object-for-a-buffer"><span class="nav-number">1.2.2.</span> <span class="nav-text">allocating and binding a memory object for a buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#过程"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">过程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#set-a-buffer-memory-barrier"><span class="nav-number">1.2.3.</span> <span class="nav-text">set a buffer memory barrier</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#image"><span class="nav-number">1.3.</span> <span class="nav-text">image</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#allocating-and-binding-a-memory-object-to-an-image"><span class="nav-number">1.3.1.</span> <span class="nav-text">allocating and binding a memory object to an image</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#setting-an-image-memory-barrier"><span class="nav-number">1.3.2.</span> <span class="nav-text">setting an image memory barrier</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-an-image-view"><span class="nav-number">1.3.3.</span> <span class="nav-text">create an image view</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-2D-image-and-view"><span class="nav-number">1.3.4.</span> <span class="nav-text">create a 2D image and view</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#create-a-layered-2D-image-with-a-CUEMAP-view"><span class="nav-number">1.3.5.</span> <span class="nav-text">create a layered 2D image with a CUEMAP view</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#data"><span class="nav-number">1.4.</span> <span class="nav-text">data</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mapping-updating-and-unmapping-host-visible-memory"><span class="nav-number">1.4.1.</span> <span class="nav-text">mapping,updating and unmapping host-visible memory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#copy-data-between-buffers"><span class="nav-number">1.4.2.</span> <span class="nav-text">copy data between buffers</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#copy-data-from-a-buffer-to-an-image"><span class="nav-number">1.4.3.</span> <span class="nav-text">copy data from a buffer to an image</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#staging-buffer"><span class="nav-number">1.5.</span> <span class="nav-text">staging buffer</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用staging-buffer更新device-local-memory"><span class="nav-number">1.5.1.</span> <span class="nav-text">使用staging buffer更新device-local memory</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#使用staging-buffer更新device-local-memory-image"><span class="nav-number">1.5.2.</span> <span class="nav-text">使用staging buffer更新device-local memory image</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#destroy"><span class="nav-number">1.6.</span> <span class="nav-text">destroy</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#销毁iamge-view"><span class="nav-number">1.6.1.</span> <span class="nav-text">销毁iamge view</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#memory-object"><span class="nav-number">1.6.2.</span> <span class="nav-text">memory object</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#buffer-1"><span class="nav-number">1.6.3.</span> <span class="nav-text">buffer</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+  
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">nolife</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.0.1</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=7.0.1"></script>
+
+  <script src="/js/src/motion.js?v=7.0.1"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=7.0.1"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=7.0.1"></script>
+<script src="/js/src/post-details.js?v=7.0.1"></script>
+
+
+
+  
+
+
+  <script src="/js/src/next-boot.js?v=7.0.1"></script>
+
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+
+  
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
